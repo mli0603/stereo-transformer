@@ -17,26 +17,24 @@ If you find our work relevant, please cite
 TODO
 ```
 
-Follow us on [Twitter](TODO) for more recent updates.
-
 ## Table of Content
-- [Introduction](TODO)
-    - [Benefits of STTR]()
-    - [Working Theory]()
-- [Dependencies]()
-- [Pre-trained Models]()
-- [Folder Structure]()
-    - [Code]()
-    - [Data]()
-- [Usage]()
-    - [Notebook/Colab Example]()
-    - [Terminal Example]()
-- [Expected Result]()
-- [Common Q&A]()
-- [License]()
-- [Contributing]()
-- [Log]()
-- [Acknowledgement]()
+- [Introduction](https://github.com/mli0603/stereo-transformer#introduction)
+    - [Benefits of STTR](https://github.com/mli0603/stereo-transformer#benefits-of-sttr)
+    - [Working Theory](https://github.com/mli0603/stereo-transformer#working-theory)
+- [Dependencies](https://github.com/mli0603/stereo-transformer#dependencies)
+- [Pre-trained Models](https://github.com/mli0603/stereo-transformer#pre-trained-models)
+- [Folder Structure](https://github.com/mli0603/stereo-transformer#folder-structure)
+    - [Code](https://github.com/mli0603/stereo-transformer#code-structure)
+    - [Data](https://github.com/mli0603/stereo-transformer#data-structure)
+- [Usage](https://github.com/mli0603/stereo-transformer#usage)
+    - [Notebook/Colab Example](https://github.com/mli0603/stereo-transformer#notebeookcolab-example)
+    - [Terminal Example](https://github.com/mli0603/stereo-transformer#terminal-example)
+- [Expected Result](https://github.com/mli0603/stereo-transformer#expected-result)
+- [Common Q&A](https://github.com/mli0603/stereo-transformer#common-qa)
+- [License](https://github.com/mli0603/stereo-transformer#license)
+- [Contributing](https://github.com/mli0603/stereo-transformer#contributing)
+- [Log](https://github.com/mli0603/stereo-transformer#log)
+- [Acknowledgement](https://github.com/mli0603/stereo-transformer#acknowledgement)
 
 ## Introduction
 #### Benefits of STTR
