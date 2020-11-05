@@ -135,15 +135,20 @@ class SceneFlowFlyingThingsDataset(data.Dataset):
         disp_left, _ = readPFM(disp_left_fname)
         disp_right, _ = readPFM(disp_right_fname)
 
-        # horizontal flip
-        result['left'], result['right'], result['occ_mask'], result['occ_mask_right'], disp, disp_right \
-            = horizontal_flip(result['left'], result['right'], occ_left, occ_right, disp_left, disp_right, self.split)
-        result['disp'] = np.nan_to_num(disp, nan=0.0)
-        result['disp_right'] = np.nan_to_num(disp_right, nan=0.0)
-
-        # random crop
         if self.split == "train":
+            # horizontal flip
+            result['left'], result['right'], result['occ_mask'], result['occ_mask_right'], disp, disp_right \
+                = horizontal_flip(result['left'], result['right'], occ_left, occ_right, disp_left, disp_right, self.split)
+            result['disp'] = np.nan_to_num(disp, nan=0.0)
+            result['disp_right'] = np.nan_to_num(disp_right, nan=0.0)
+
+            # random crop        
             result = random_crop(360, 640, result, self.split)
+        else:
+            result['occ_mask'] = occ_left
+            result['occ_mask_right'] = occ_right
+            result['disp'] = disp_left
+            result['disp_right'] = disp_right
 
         result = augment(result, self.transformation)
 
