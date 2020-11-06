@@ -1,6 +1,6 @@
 # STereo TRansformer (STTR)
 
-This is the official repo for our work [Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers](TODO) for CVPR 2021 submission.
+This is the official repo for our work [Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers](https://arxiv.org/abs/2011.02910) for CVPR 2021 submission.
 
 ![](media/network_overview.png)
 
@@ -14,7 +14,12 @@ Generalization to medical domain when trained only on synthetic data:
 
 If you find our work relevant, please cite
 ```
-TODO
+@article{li2020revisiting,
+  title={Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers},
+  author={Li, Zhaoshuo and Liu, Xingtong and Creighton, Francis X and Taylor, Russell H and Unberath, Mathias},
+  journal={arXiv preprint arXiv:2011.02910},
+  year={2020}
+}
 ```
 
 ## Table of Content
