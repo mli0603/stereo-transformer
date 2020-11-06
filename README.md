@@ -32,7 +32,7 @@ If you find our work relevant, please cite
     - [Code](https://github.com/mli0603/stereo-transformer#code-structure)
     - [Data](https://github.com/mli0603/stereo-transformer#data-structure)
 - [Usage](https://github.com/mli0603/stereo-transformer#usage)
-    - [Notebook/Colab Example](https://github.com/mli0603/stereo-transformer#notebeookcolab-example)
+    - [Colab/Notebook](https://github.com/mli0603/stereo-transformer#colabnotebook-example)
     - [Terminal Example](https://github.com/mli0603/stereo-transformer#terminal-example)
 - [Expected Result](https://github.com/mli0603/stereo-transformer#expected-result)
 - [Common Q&A](https://github.com/mli0603/stereo-transformer#common-qa)
@@ -141,10 +141,13 @@ SCARED
 ```
 
 ## Usage
-#### Notebeook/Colab Example
+#### Colab/Notebook Example
+If you don't have a GPU, you can use Google Colab:
+- An example of how to run inference is given in the Colab example [<img src="https://colab.research.google.com/assets/colab-badge.svg" align="center">](https://colab.research.google.com/github/mli0603/stereo-transformer/blob/main/scripts/inference_example_colab.ipynb)
+
+If you have a GPU and want to run locally:
 - Download pretrained model using links in [Pre-trained Models]().
 - An example of how to run inference is given in file [inference_example.ipynb](scripts/inference_example.ipynb).
-- Colab example is coming soon.
 
 #### Terminal Example
 - Download pretrained model using links in [Pre-trained Models]().
