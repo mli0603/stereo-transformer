@@ -1,6 +1,6 @@
 # STereo TRansformer (STTR)
 
-This is the official repo for our work [Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers](https://arxiv.org/abs/2011.02910) for CVPR 2021 submission.
+This is the official repo for our work [Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers](https://arxiv.org/abs/2011.02910).
 
 ![](media/network_overview.png)
 
