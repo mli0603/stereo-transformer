@@ -146,23 +146,28 @@ If you don't have a GPU, you can use Google Colab:
 - An example of how to run inference is given in the Colab example [<img src="https://colab.research.google.com/assets/colab-badge.svg" align="center">](https://colab.research.google.com/github/mli0603/stereo-transformer/blob/main/scripts/inference_example_colab.ipynb)
 
 If you have a GPU and want to run locally:
-- Download pretrained model using links in [Pre-trained Models]().
+- Download pretrained model using links in [Pre-trained Models](https://github.com/mli0603/stereo-transformer#pre-trained-models). 
+  - Note: The pretrained model is assumed to be in the `stereo-transformer` folder.
 - An example of how to run inference is given in file [inference_example.ipynb](scripts/inference_example.ipynb).
 
 #### Terminal Example
-- Download pretrained model using links in [Pre-trained Models]().
+- Download pretrained model using links in [Pre-trained Models](https://github.com/mli0603/stereo-transformer#pre-trained-models).
 - Run pretraining by
     ```
     sh scripts/pretrain.sh
     ```
+    - Note: please set the `--dataset_directory` argument in the `.sh` file to where Scene Flow data is stored, i.e. replace `PATH_TO_SCENEFLOW`
 - Run fine-tune on KITTI by
     ```
     sh scripts/kitti_finetune.sh
     ```
+    - Note: please set the `--dataset_directory` argument in the `.sh` file to where KITTI data is stored, i.e. replace `PATH_TO_KITTI`
+    - Note: the pretrained model is assumed to be in the `stereo-transformer` folder. 
 - Run evaluation on the provided KITTI example by
     ```
     sh scripts/kitti_toy_eval.sh
     ```
+    - Note: the pretrained model is assumed to be in the `stereo-transformer` folder. 
 
 ## Expected Result
 The result of STTR may vary by a small fraction depending on the trial, but it should be approximately the same as the tables below.
