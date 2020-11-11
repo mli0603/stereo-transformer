@@ -38,7 +38,7 @@ class RegressionHead(nn.Module):
 
     def _compute_low_res_disp(self, pos_shift: Tensor, attn_weight: Tensor, occ_mask: Tensor):
         """
-        Compute low res disparity using the attention weight by finding the maximum response area
+        Compute low res disparity using the attention weight by finding the most attended pixel and regress within the 3px window
 
         :param pos_shift: relative pos shift (computed from _compute_unscaled_pos_shift), [1,1,W,W]
         :param attn_weight: attention (computed from _optimal_transport), [N,H,W,W]
@@ -216,6 +216,13 @@ class RegressionHead(nn.Module):
 
     def forward(self, attn_weight: Tensor, x: NestedTensor):
         """
+        Regression head follows steps of
+            - compute scale for disparity (if there is downsampling)
+            - impose uniqueness constraint by optimal transport
+            - compute RR loss
+            - regress disparity and occlusion
+            - upsample (if there is downsampling) and adjust based on context
+        
         :param attn_weight: raw attention weight, [N,H,W,W]
         :param x: input data
         :return: dictionary of predicted values
@@ -234,7 +241,8 @@ class RegressionHead(nn.Module):
             # optimal transport
             attn_ot = self._optimal_transport(attn_weight, 10)
         else:
-            raise Exception('Softmax not implemented yet')
+            # softmax
+            attn_ot = self._softmax(attn_weight)
 
         # compute relative response (RR) at ground truth location
         if x.disp is not None:
@@ -263,9 +271,10 @@ class RegressionHead(nn.Module):
             output['gt_response_occ_right'] = None
             occ_mask = x.occ_mask
 
-        # compute low res disparity
+        # regress low res disparity
         pos_shift = self._compute_unscaled_pos_shift(attn_weight.shape[2], attn_weight.device)  # NxHxW_leftxW_right
         disp_pred_low_res, matched_attn = self._compute_low_res_disp(pos_shift, attn_ot[..., :-1, :-1], occ_mask)
+        # regress low res occlusion
         occ_pred_low_res = self._compute_low_res_occ(matched_attn)
 
         # with open('attn_weight.dat', 'wb') as f:
@@ -273,7 +282,7 @@ class RegressionHead(nn.Module):
         # with open('target.dat', 'wb') as f:
         #     torch.save(target, f)
 
-        # upsample
+        # upsample and context adjust
         if x.sampled_cols is not None:
             output['disp_pred'], output['disp_pred_low_res'], output['occ_pred'] = self._upsample(x, disp_pred_low_res,
                                                                                                   occ_pred_low_res,
