@@ -42,7 +42,7 @@ class PositionEncodingSine1DRelative(nn.Module):
             _, h = inputs.sampled_rows.size()
 
         # populate all possible relative distances
-        x_embed = torch.linspace(w - 1, -w + 1, 2 * w - 1, dtype=torch.float32, device=x.device).expand(bs, h, -1)
+        x_embed = torch.linspace(w - 1, -w + 1, 2 * w - 1, dtype=torch.float32, device=x.device)
 
         # scale distance if there is down sample
         if inputs.sampled_cols is not None:
@@ -55,10 +55,9 @@ class PositionEncodingSine1DRelative(nn.Module):
         dim_t = torch.arange(self.num_pos_feats, dtype=torch.float32, device=x.device)
         dim_t = self.temperature ** (2 * (dim_t // 2) / self.num_pos_feats)
 
-        pos_x = x_embed[:, :, :, None] / dim_t
+        pos_x = x_embed[:, None] / dim_t  # 2W-1xC
         # interleave cos and sin instead of concatenate
-        pos = torch.stack((pos_x[:, :, :, 0::2].sin(), pos_x[:, :, :, 1::2].cos()), dim=4).flatten(3)  # NxHxWxC
-        pos = pos.permute(0, 3, 1, 2)  # NxCxHx(2W-1)
+        pos = torch.stack((pos_x[:, 0::2].sin(), pos_x[:, 1::2].cos()), dim=2).flatten(1)  # 2W-1xC
 
         return pos
 
