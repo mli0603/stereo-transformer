@@ -95,13 +95,11 @@ class Transformer(nn.Module):
         feat_left = feat_left.permute(1, 3, 2, 0).flatten(2).permute(1, 2, 0)  # CxWxHxN -> CxWxHN -> WxHNxC
         feat_right = feat_right.permute(1, 3, 2, 0).flatten(2).permute(1, 2, 0)
         if pos_enc is not None:
-            pos_enc = pos_enc.permute(1, 3, 2, 0).flatten(2).permute(1, 2, 0)  # Cx2W-1xHxN -> Cx2W-1xHN -> 2W-1xHNxC
-
             with torch.no_grad():
                 # indexes to shift rel pos encoding
                 indexes_r = torch.linspace(w - 1, 0, w).view(w, 1).to(feat_left.device)
                 indexes_c = torch.linspace(0, w - 1, w).view(1, w).to(feat_left.device)
-                pos_indexes = (indexes_r + indexes_c).long()  # WxW
+                pos_indexes = (indexes_r + indexes_c).view(-1).long()  # WxW' -> WW'
         else:
             pos_indexes = None
 
