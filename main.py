@@ -160,7 +160,7 @@ def main(args):
     # mixed precision training
     if args.apex:
         from apex import amp
-        model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
+        model, optimizer = amp.initialize(model, optimizer, opt_level='O2')
     else:
         amp = None
 

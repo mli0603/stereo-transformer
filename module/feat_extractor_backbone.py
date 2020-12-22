@@ -82,6 +82,22 @@ class SppBackbone(nn.Module):
         # in conv
         output = self.in_conv(src_stereo)  # 1/2
 
+        temp = self.in_conv[0](src_stereo)
+        # TODO: remove
+        import matplotlib.pyplot as plt
+        plt.figure()
+        plt.imshow(temp[0, :3].permute(1, 2, 0).detach().cpu())
+        plt.show()
+        temp = self.in_conv[1](temp)
+        print(temp[0, 5, 100, 100])
+        plt.figure()
+        plt.imshow(temp[0, :3].permute(1, 2, 0).detach().cpu())
+        plt.show()
+        for n, p in self.in_conv[1].named_parameters():
+            print(n, p)
+        print(self.in_conv[1].running_mean)
+        print(self.in_conv[1].running_var)
+
         # res blocks
         output_1 = self.resblock_1(output)  # 1/4
         output_2 = self.resblock_2(output_1)  # 1/8
@@ -98,7 +114,7 @@ class SppBackbone(nn.Module):
         spp_4 = F.interpolate(spp_4, size=(h_spp, w_spp), mode='bilinear', align_corners=False)
         output_3 = torch.cat([spp_1, spp_2, spp_3, spp_4], dim=1)  # 1/16
 
-        return [src_stereo, output_1, output_2, output_3]
+        return [output_1, output_2, output_3]
 
 
 def build_backbone(args):
