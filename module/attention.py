@@ -122,10 +122,12 @@ class MultiheadAttentionRelative(nn.MultiheadAttention):
         # softmax
         attn = F.softmax(attn, dim=-1)
 
-        # compute v
-        v_o = torch.einsum('newv,vnec->wnec', attn, v)
-        assert list(v_o.size()) == [w, bsz, self.num_heads, head_dim]
-        v_o = v_o.contiguous().view(w, bsz, embed_dim)
+        # compute v, equivalent to einsum('',attn,v),
+        # need to do this because apex does not support einsum when precision is mixed
+        v_o = torch.bmm(attn.view(bsz * self.num_heads, w, w),
+                        v.permute(1, 2, 0, 3).view(bsz * self.num_heads, w, head_dim))  # NxExWxW', W'xNxExC -> NExWxC
+        assert list(v_o.size()) == [bsz * self.num_heads, w, head_dim]
+        v_o = v_o.reshape(bsz, self.num_heads, w, head_dim).permute(2, 0, 1, 3).reshape(w, bsz, embed_dim)
         v_o = F.linear(v_o, self.out_proj.weight, self.out_proj.bias)
 
         # average attention weights over heads
