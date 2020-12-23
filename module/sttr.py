@@ -32,7 +32,7 @@ class STTR(nn.Module):
         self.transformer = build_transformer(args)
         self.regression_head = build_regression_head(args)
 
-        self._replace_bn_with_gn(args.nheads)
+        self._replace_bn_with_gn()
         self._reset_parameters()
         self._relu_inplace()
 
@@ -49,7 +49,7 @@ class STTR(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.zeros_(m.bias)
 
-    def _replace_bn_with_gn(self, nhead):
+    def _replace_bn_with_gn(self):
         """
         replace all batch norm with group norm
         """
@@ -61,7 +61,7 @@ class STTR(nn.Module):
                 list_name.append(n)
 
         for name, bn in zip(list_name, list_bn):
-            gn = nn.GroupNorm(nhead, bn.num_features, affine=True)
+            gn = nn.GroupNorm(bn.num_features, bn.num_features, affine=True)
             target_attr = self
             for attr_str in name.split('.')[:-1]:
                 target_attr = target_attr.__getattr__(attr_str)
