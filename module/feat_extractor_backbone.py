@@ -82,22 +82,6 @@ class SppBackbone(nn.Module):
         # in conv
         output = self.in_conv(src_stereo)  # 1/2
 
-        temp = self.in_conv[0](src_stereo)
-        # TODO: remove
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.imshow(temp[0, :3].permute(1, 2, 0).detach().cpu())
-        plt.show()
-        temp = self.in_conv[1](temp)
-        print(temp[0, 5, 100, 100])
-        plt.figure()
-        plt.imshow(temp[0, :3].permute(1, 2, 0).detach().cpu())
-        plt.show()
-        for n, p in self.in_conv[1].named_parameters():
-            print(n, p)
-        print(self.in_conv[1].running_mean)
-        print(self.in_conv[1].running_var)
-
         # res blocks
         output_1 = self.resblock_1(output)  # 1/4
         output_2 = self.resblock_2(output_1)  # 1/8

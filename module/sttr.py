@@ -32,8 +32,8 @@ class STTR(nn.Module):
         self.transformer = build_transformer(args)
         self.regression_head = build_regression_head(args)
 
+        self._replace_bn_with_gn(args.nheads)
         self._reset_parameters()
-        self._disable_batchnorm_tracking()
         self._relu_inplace()
 
     def _reset_parameters(self):
@@ -45,17 +45,27 @@ class STTR(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
                 if m.bias is not None:
                     nn.init.zeros_(m.bias)
-            elif isinstance(m, (nn.BatchNorm2d, nn.LayerNorm)):
+            elif isinstance(m, (nn.GroupNorm, nn.LayerNorm)):
                 nn.init.constant_(m.weight, 1)
                 nn.init.zeros_(m.bias)
 
-    def _disable_batchnorm_tracking(self):
+    def _replace_bn_with_gn(self, nhead):
         """
-        disable Batchnorm tracking stats to reduce dependency on dataset (this acts as InstanceNorm with affine when batch size is 1)
+        replace all batch norm with group norm
         """
-        for m in self.modules():
+        list_bn = []
+        list_name = []
+        for n, m in self.named_modules():
             if isinstance(m, nn.BatchNorm2d):
-                m.track_running_stats = False
+                list_bn.append(m)
+                list_name.append(n)
+
+        for name, bn in zip(list_name, list_bn):
+            gn = nn.GroupNorm(nhead, bn.num_features, affine=True)
+            target_attr = self
+            for attr_str in name.split('.')[:-1]:
+                target_attr = target_attr.__getattr__(attr_str)
+            target_attr.__setattr__(name.split('.')[-1], gn)
 
     def _relu_inplace(self):
         """
