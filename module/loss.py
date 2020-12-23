@@ -95,7 +95,7 @@ class Criterion(nn.Module):
         :return: rr loss
         """""
         if invalid_mask is not None:
-            invalid_mask = invalid_mask[:, ::4, ::4]  # TODO: check
+            invalid_mask = invalid_mask[:, ::4, ::4]
 
         # compute rr loss in non-occluded region
         gt_response = outputs['gt_response']
@@ -133,7 +133,6 @@ class Criterion(nn.Module):
         """
         disp = inputs.disp
         if not fullres:
-            # TODO: check
             invalid_mask = invalid_mask[:, ::4, ::4]
             disp = disp[:, ::4, ::4]
 

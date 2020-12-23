@@ -90,7 +90,7 @@ class Transformer(nn.Module):
         """
 
         # flatten NxCxHxW to WxHNxC
-        bs, c, hn, w = feat_left.shape
+        bs, c, h, w = feat_left.shape
 
         feat_left = feat_left.permute(1, 3, 2, 0).flatten(2).permute(1, 2, 0)  # CxWxHxN -> CxWxHN -> WxHNxC
         feat_right = feat_right.permute(1, 3, 2, 0).flatten(2).permute(1, 2, 0)
@@ -107,8 +107,8 @@ class Transformer(nn.Module):
         feat = torch.cat([feat_left, feat_right], dim=1)  # Wx2HNxC
 
         # compute attention
-        attn_weight = self._alternating_attn(feat, pos_enc, pos_indexes, hn)
-        attn_weight = attn_weight.view(hn, bs, w, w).permute(1, 0, 2, 3)  # NxHxWxW, dim=2 left image, dim=3 right image
+        attn_weight = self._alternating_attn(feat, pos_enc, pos_indexes, bs * h)
+        attn_weight = attn_weight.view(h, bs, w, w).permute(1, 0, 2, 3)  # NxHxWxW, dim=2 left image, dim=3 right image
 
         return attn_weight
 

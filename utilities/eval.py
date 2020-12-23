@@ -38,12 +38,12 @@ def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, data_loader: It
 
         # save output
         if save_output:
-            output_file['left'].append(data['left'][0])
-            output_file['right'].append(data['right'][0])
-            output_file['disp'].append(data['disp'][0])
-            output_file['occ_mask'].append(data['occ_mask'][0].cpu())
-            output_file['disp_pred'].append(outputs['disp_pred'].data[0].cpu())
-            output_file['occ_pred'].append(outputs['occ_pred'].data[0].cpu())
+            output_file['left'].append(data['left'])
+            output_file['right'].append(data['right'])
+            output_file['disp'].append(data['disp'])
+            output_file['occ_mask'].append(data['occ_mask'].cpu())
+            output_file['disp_pred'].append(outputs['disp_pred'].data.cpu())
+            output_file['occ_pred'].append(outputs['occ_pred'].data.cpu())
 
             # save to file
             if len(output_file['left']) >= 50:

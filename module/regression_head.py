@@ -113,8 +113,8 @@ class RegressionHead(nn.Module):
         disp_pred_attn = disp_pred * scale
 
         # upsample
-        disp_pred = F.interpolate(disp_pred_attn[None,], size=(h, w), mode='nearest')  # N x 1 x H x W
-        occ_pred = F.interpolate(occ_pred[None,], size=(h, w), mode='nearest')  # N x 1 x H x W
+        disp_pred = F.interpolate(disp_pred_attn[:, None, ], size=(h, w), mode='nearest')  # N x 1 x H x W
+        occ_pred = F.interpolate(occ_pred[:, None, ], size=(h, w), mode='nearest')  # N x 1 x H x W
 
         if self.cal is not None:
             # normalize disparity
@@ -246,7 +246,6 @@ class RegressionHead(nn.Module):
 
         # compute relative response (RR) at occluded location
         if x.occ_mask is not None:
-            # TODO: check
             # handle occlusion
             occ_mask = x.occ_mask[:, ::4, ::4]
             occ_mask_right = x.occ_mask_right[:, ::4, ::4]

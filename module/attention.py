@@ -114,6 +114,7 @@ class MultiheadAttentionRelative(nn.MultiheadAttention):
         # apply attn mask
         if attn_mask is not None:
             attn_mask = attn_mask[None, None, ...]
+            assert list(attn_mask.size()) == [1, 1, w, w], "wrong shape for attn mask"
             attn += attn_mask
 
         # raw attn
