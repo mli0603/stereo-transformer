@@ -214,6 +214,7 @@ def main(args):
 
     # train
     print("Start training")
+    torch.backends.cudnn.benchmark = True  # enable benchmark
     for epoch in range(args.start_epoch, args.epochs):
         # train
         print("Epoch: %d" % epoch)
