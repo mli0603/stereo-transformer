@@ -54,13 +54,14 @@ class Tokenizer(nn.Module):
     Expanding path of feature descriptor using DenseBlocks
     """
 
-    def __init__(self, block_config: int, backbone_feat_channel: list, hidden_dim: int, growth_rate: int):
+    def __init__(self, block_config: int, hidden_dim: int, backbone_feat_channel: list, growth_rate: int):
         super(Tokenizer, self).__init__()
 
         backbone_feat_channel.reverse()  # reverse so we have high-level first (lowest-spatial res)
 
         self.block_config = block_config
         self.growth_rate = growth_rate
+        self.hidden_dim = hidden_dim
 
         # 1/16
         self.bottle_neck = _DenseBlock(block_config, backbone_feat_channel[0], 4, drop_rate=0.0,
@@ -100,12 +101,15 @@ class Tokenizer(nn.Module):
         for i in range(len(features) - 1):
             hs = self.up[i](output, features[i + 1])  # scale up and concat
             output = self.dense_block[i](hs)  # denseblock
-            output = output[:, -(self.block_config * self.growth_rate):]  # take only the new features
+            if i == len(features) - 2:
+                output = output[:, -self.hidden_dim:]
+            else:
+                output = output[:, -(self.block_config * self.growth_rate):]  # take only the new features
 
         return output
 
 
 def build_tokenizer(args, layer_channel):
-    growth_rate = 16
     block_config = 4
-    return Tokenizer(block_config, layer_channel, args.channel_dim, growth_rate)
+    growth_rate = 16
+    return Tokenizer(block_config, args.channel_dim, layer_channel, growth_rate)
