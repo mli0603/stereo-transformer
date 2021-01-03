@@ -60,7 +60,7 @@ def get_args_parser():
 
     # * Transformer
     parser.add_argument('--num_attn_layers', default=6, type=int, help="Number of attention layers in the transformer")
-    parser.add_argument('--nheads', default=8, type=int,
+    parser.add_argument('--nheads', default=4, type=int,
                         help="Number of attention heads inside the transformer's attentions")
 
     # * Regression Head
