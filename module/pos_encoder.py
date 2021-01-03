@@ -34,7 +34,7 @@ class PositionEncodingSine1DRelative(nn.Module):
         """
         x = inputs.left
         bs, _, _, w = x.size()
-        w = w // 4
+        w = math.ceil(w / 4)
 
         # populate all possible relative distances
         x_embed = torch.linspace(w - 1, -w + 1, 2 * w - 1, dtype=torch.float32, device=x.device)
