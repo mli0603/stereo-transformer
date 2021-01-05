@@ -32,7 +32,7 @@ class STTR(nn.Module):
         self.transformer = build_transformer(args)
         self.regression_head = build_regression_head(args)
 
-        self._replace_bn_with_gn()
+        self._disable_batchnorm_tracking()
         self._reset_parameters()
         self._relu_inplace()
 
@@ -49,23 +49,13 @@ class STTR(nn.Module):
                 nn.init.constant_(m.weight, 1)
                 nn.init.zeros_(m.bias)
 
-    def _replace_bn_with_gn(self):
+    def _disable_batchnorm_tracking(self):
         """
-        replace all batch norm with group norm
+        disable Batchnorm tracking stats to reduce dependency on dataset (this acts as InstanceNorm with affine when batch size is 1)
         """
-        list_bn = []
-        list_name = []
-        for n, m in self.named_modules():
+        for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):
-                list_bn.append(m)
-                list_name.append(n)
-
-        for name, bn in zip(list_name, list_bn):
-            gn = nn.GroupNorm(bn.num_features, bn.num_features, affine=True)
-            target_attr = self
-            for attr_str in name.split('.')[:-1]:
-                target_attr = target_attr.__getattr__(attr_str)
-            target_attr.__setattr__(name.split('.')[-1], gn)
+                m.track_running_stats = False
 
     def _relu_inplace(self):
         """
