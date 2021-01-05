@@ -141,6 +141,9 @@ class SceneFlowFlyingThingsDataset(data.Dataset):
                 = horizontal_flip(result['left'], result['right'], occ_left, occ_right, disp_left, disp_right, self.split)
             result['disp'] = np.nan_to_num(disp, nan=0.0)
             result['disp_right'] = np.nan_to_num(disp_right, nan=0.0)
+
+            # random crop
+            result = random_crop(360, 640, result, self.split)
         else:
             result['occ_mask'] = occ_left
             result['occ_mask_right'] = occ_right
