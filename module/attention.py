@@ -62,9 +62,26 @@ class MultiheadAttentionRelative(nn.MultiheadAttention):
                     _b = _b[_start:]
                 k, v = F.linear(key, _w, _b).chunk(2, dim=-1)
 
+        # project to find q_r, k_r
+        if pos_enc is not None:
+            # reshape pos_enc
+            pos_enc = torch.index_select(pos_enc, 0, pos_indexes).view(w, w,
+                                                                       -1)  # 2W-1xC -> WW'xC -> WxW'xC
+            # compute k_r, q_r
+            _start = 0
+            _end = 2 * embed_dim
+            _w = self.in_proj_weight[_start:_end, :]
+            _b = self.in_proj_bias[_start:_end]
+            q_r, k_r = F.linear(pos_enc, _w, _b).chunk(2, dim=-1)  # WxW'xC
+        else:
+            q_r = None
+            k_r = None
+
         # scale query
         scaling = float(head_dim) ** -0.5
         q = q * scaling
+        if q_r is not None:
+            q_r = q_r * scaling
 
         # reshape
         q = q.contiguous().view(w, bsz, self.num_heads, head_dim)  # WxNxExC
@@ -73,8 +90,24 @@ class MultiheadAttentionRelative(nn.MultiheadAttention):
         if v is not None:
             v = v.contiguous().view(-1, bsz, self.num_heads, head_dim)
 
+        if q_r is not None:
+            q_r = q_r.contiguous().view(w, w, self.num_heads, head_dim)  # WxW'xExC
+        if k_r is not None:
+            k_r = k_r.contiguous().view(w, w, self.num_heads, head_dim)
+
         # compute attn weight
-        attn = torch.einsum('wnec,vnec->newv', q, k)  # NxExWxW'
+        attn_feat = torch.einsum('wnec,vnec->newv', q, k)  # NxExWxW'
+
+        # add positional terms
+        if pos_enc is not None:
+            # 0.3 s
+            attn_feat_pos = torch.einsum('wnec,wvec->newv', q, k_r)  # NxExWxW'
+            attn_pos_feat = torch.einsum('vnec,wvec->newv', k, q_r)  # NxExWxW'
+
+            # 0.1 s
+            attn = attn_feat + attn_feat_pos + attn_pos_feat
+        else:
+            attn = attn_feat
 
         assert list(attn.size()) == [bsz, self.num_heads, w, w]
 
@@ -94,15 +127,6 @@ class MultiheadAttentionRelative(nn.MultiheadAttention):
         # need to do this because apex does not support einsum when precision is mixed
         v_o = torch.bmm(attn.view(bsz * self.num_heads, w, w),
                         v.permute(1, 2, 0, 3).view(bsz * self.num_heads, w, head_dim))  # NxExWxW', W'xNxExC -> NExWxC
-        # add pos enc
-        if pos_enc is not None:
-            # reshape pos_enc
-            pos_enc = torch.index_select(pos_enc, 0, pos_indexes).view(w, w,
-                                                                       -1)  # 2W-1xC -> WW'xC -> WxW'xC
-            v_o_pos = torch.einsum('newv,wvc->newc', attn, pos_enc).view(bsz * self.num_heads, w,
-                                                                         head_dim)  # NExWxW'xC -> NExWxC
-            v_o = v_o + v_o_pos
-
         assert list(v_o.size()) == [bsz * self.num_heads, w, head_dim]
         v_o = v_o.reshape(bsz, self.num_heads, w, head_dim).permute(2, 0, 1, 3).reshape(w, bsz, embed_dim)
         v_o = F.linear(v_o, self.out_proj.weight, self.out_proj.bias)

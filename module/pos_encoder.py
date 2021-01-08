@@ -61,7 +61,7 @@ def build_position_encoding(args):
     channel_dim = args.channel_dim
     nheads = args.nheads
     if mode == 'sine1d_rel':
-        n_steps = channel_dim // nheads
+        n_steps = channel_dim
         position_encoding = PositionEncodingSine1DRelative(n_steps, normalize=False)
     elif mode == 'none':
         position_encoding = no_pos_encoding
