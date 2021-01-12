@@ -73,15 +73,12 @@ class RegressionHead(nn.Module):
 
         return disp_pred_low_res.sum(-1), norm
 
-    def _compute_gt_location(self, scale: float, sampled_cols: Tensor, sampled_rows: Tensor,
-                             attn_weight: Tensor, disp: Tensor):
+    def _compute_gt_location(self, scale: float, attn_weight: Tensor, disp: Tensor):
         """
         Find target locations using ground truth disparity.
         Find ground truth response at those locations using attention weight.
 
         :param scale: high-res to low-res disparity scale
-        :param sampled_cols: index to downsample columns
-        :param sampled_rows: index to downsample rows
         :param attn_weight: attention weight (output from _optimal_transport), [N,H,W,W]
         :param disp: ground truth disparity
         :return: response at ground truth location [N,H,W,1] and target ground truth locations [N,H,W,1]
@@ -239,8 +236,7 @@ class RegressionHead(nn.Module):
         # compute relative response (RR) at ground truth location
         if x.disp is not None:
             # find ground truth response (gt_response) and location (target)
-            output['gt_response'], target = self._compute_gt_location(scale, x.sampled_cols, x.sampled_rows,
-                                                                      attn_ot[..., :-1, :-1], x.disp)
+            output['gt_response'], target = self._compute_gt_location(scale, attn_ot[..., :-1, :-1], x.disp)
         else:
             output['gt_response'] = None
 

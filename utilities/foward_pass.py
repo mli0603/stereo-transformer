@@ -38,18 +38,9 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
 
     # if need to downsample, sample with a provided stride
     bs, _, h, w = left.size()
-    if downsample <= 0:
-        sampled_cols = None
-        sampled_rows = None
-    else:
-        col_offset = int(downsample / 2)
-        row_offset = int(downsample / 2)
-        sampled_cols = torch.arange(col_offset, w, downsample)[None,].expand(bs, -1).to(device)
-        sampled_rows = torch.arange(row_offset, h, downsample)[None,].expand(bs, -1).to(device)
 
     # build the input
-    inputs = NestedTensor(left, right, sampled_cols=sampled_cols, sampled_rows=sampled_rows, disp=disp,
-                          occ_mask=occ_mask, occ_mask_right=occ_mask_right)
+    inputs = NestedTensor(left, right, disp=disp, occ_mask=occ_mask, occ_mask_right=occ_mask_right)
 
     # forward pass
     outputs = model(inputs)

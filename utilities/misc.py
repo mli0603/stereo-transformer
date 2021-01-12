@@ -10,15 +10,12 @@ import torch.nn as nn
 
 
 class NestedTensor(object):
-    def __init__(self, left, right, disp=None, sampled_cols=None, sampled_rows=None, occ_mask=None,
-                 occ_mask_right=None):
+    def __init__(self, left, right, disp=None, occ_mask=None, occ_mask_right=None):
         self.left = left
         self.right = right
         self.disp = disp
         self.occ_mask = occ_mask
         self.occ_mask_right = occ_mask_right
-        self.sampled_cols = sampled_cols
-        self.sampled_rows = sampled_rows
 
 
 def center_crop(layer, max_height, max_width):
