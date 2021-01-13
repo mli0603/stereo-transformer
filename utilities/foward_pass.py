@@ -6,13 +6,6 @@ import torch
 
 from utilities.misc import NestedTensor
 
-downsample = 0
-
-
-def set_downsample(args):
-    global downsample
-    downsample = args.downsample
-
 
 def write_summary(stats, summary, epoch, mode):
     """
@@ -36,7 +29,6 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
     disp, occ_mask, occ_mask_right = data['disp'].to(device), data['occ_mask'].to(device), \
                                      data['occ_mask_right'].to(device)
 
-    # if need to downsample, sample with a provided stride
     bs, _, h, w = left.size()
 
     # build the input

@@ -16,7 +16,6 @@ from utilities.eval import evaluate
 from utilities.inference import inference
 from utilities.summary_logger import TensorboardSummary
 from utilities.train import train_one_epoch
-from utilities.foward_pass import set_downsample
 from module.loss import build_criterion
 
 
@@ -47,7 +46,8 @@ def get_args_parser():
     parser.add_argument('--num_workers', default=1, type=int)
     parser.add_argument('--checkpoint', type=str, default='dev', help='checkpoint name for current experiment')
     parser.add_argument('--pre_train', action='store_true')
-    parser.add_argument('--downsample', default=3, type=int, help='Ratio to downsample width/height')
+    parser.add_argument('--downsample', default=3, type=int,
+                        help='This is outdated in STTR-light. Default downsampling is 4 and cannot be changed.')
     parser.add_argument('--apex', action='store_true', help='enable mixed precision training')
 
     # * STTR
@@ -202,9 +202,6 @@ def main(args):
 
     # build loss criterion
     criterion = build_criterion(args)
-
-    # set downsample rate
-    set_downsample(args)
 
     # eval
     if args.eval:
