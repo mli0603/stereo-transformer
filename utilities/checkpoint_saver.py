@@ -6,6 +6,7 @@ import glob
 import os
 
 import torch
+from pygit2 import Repository
 
 
 class Saver(object):
@@ -37,3 +38,5 @@ class Saver(object):
             config_dict = vars(self.args)
             for k in vars(self.args):
                 file.write(f"{k}={config_dict[k]} \n")
+            repo = Repository('.')
+            file.write(f"git-repo={repo.head.shorthand} \n")
