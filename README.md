@@ -99,7 +99,7 @@ You can download the pretrained model from the following links:
 |:--------------------------         |:---------|
 | sceneflow_pretrained_model.pth.tar |  [Download link](https://drive.google.com/file/d/1R0YUpFzDRTKvjRfngF8SPj2JR2M1mMTF/view?usp=sharing)    |
 | kitti_finetuned_model.pth.tar      |  [Download link](https://drive.google.com/file/d/1UUESCCnOsb7TqzwYMkVV3d23k8shxNcE/view?usp=sharing)    |
-| ::fire::sttr_light_sceneflow_pretrained_model.pth.tar::fire::      |  [Download link](https://drive.google.com/file/d/1MW5g1LQ1RaYbqeDS2AlHPZ96wAmkFG_O/view?usp=sharing)    |
+| :fire:sttr_light_sceneflow_pretrained_model.pth.tar:fire:      |  [Download link](https://drive.google.com/file/d/1MW5g1LQ1RaYbqeDS2AlHPZ96wAmkFG_O/view?usp=sharing)    |
 
 ## Folder Structure
 #### Code Structure
