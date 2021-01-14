@@ -22,6 +22,12 @@ If you find our work relevant, please cite
 }
 ```
 
+## Update
+- 2021.01.13: :fire::fire::fire: STTR-light :fire::fire::fire: is released! Now the network is **~3x** faster and **~4x** more
+  memory efficient with comparable performance as before. This also enables inference/training on higher resolution images. The benchmark result can be found in [Expected Result](https://github.com/mli0603/stereo-transformer#expected-result).
+  Use branch `sttr-light` for the new model. 
+- 2020.11.05: First code and arxiv release
+
 ## Table of Content
 - [Introduction](https://github.com/mli0603/stereo-transformer#introduction)
     - [Benefits of STTR](https://github.com/mli0603/stereo-transformer#benefits-of-sttr)
@@ -38,7 +44,6 @@ If you find our work relevant, please cite
 - [Common Q&A](https://github.com/mli0603/stereo-transformer#common-qa)
 - [License](https://github.com/mli0603/stereo-transformer#license)
 - [Contributing](https://github.com/mli0603/stereo-transformer#contributing)
-- [Log](https://github.com/mli0603/stereo-transformer#log)
 - [Acknowledgement](https://github.com/mli0603/stereo-transformer#acknowledgement)
 
 ## Introduction
@@ -94,6 +99,7 @@ You can download the pretrained model from the following links:
 |:--------------------------         |:---------|
 | sceneflow_pretrained_model.pth.tar |  [Download link](https://drive.google.com/file/d/1R0YUpFzDRTKvjRfngF8SPj2JR2M1mMTF/view?usp=sharing)    |
 | kitti_finetuned_model.pth.tar      |  [Download link](https://drive.google.com/file/d/1UUESCCnOsb7TqzwYMkVV3d23k8shxNcE/view?usp=sharing)    |
+| :fire:sttr_light_sceneflow_pretrained_model.pth.tar:fire:      |  [Download link](https://drive.google.com/file/d/1MW5g1LQ1RaYbqeDS2AlHPZ96wAmkFG_O/view?usp=sharing)    |
 
 ## Folder Structure
 #### Code Structure
@@ -174,15 +180,27 @@ If you have a GPU and want to run locally:
 ## Expected Result
 The result of STTR may vary by a small fraction depending on the trial, but it should be approximately the same as the tables below.
  
-Expected result of `sceneflow_pretrained_model.pth.tar` 
+Expected result of STTR (`sceneflow_pretrained_model.pth.tar`) and STTR-light (`sttr_light_pretrained_model.pth.tar`).
 
-Dataset | 3px Error | EPE
-:--- | :---: | :---:
-Scene Flow | 1.26 | 0.45
-Scene Flow (disp < 192) | 1.13 | 0.42
-KITTI 2015 | 6.73 | 1.50
-MIDDLEBURY 2014 | 6.19 | 2.33
-SCARED | 8.00 | 1.47
+|            	|    Sceneflow    	|                 	| Sceneflow (disp<192) 	|                 	|
+|:----------:	|:---------------:	|:---------------:	|:--------------------:	|:---------------:	|
+|            	|    **3px Error** 	|       **EPE**    	|       **3px Error**   |       **EPE**    	|
+|   PSMNet   	|       3.31      	|       1.25      	|         2.87         	|       0.95      	|
+|   GA-Net   	|       2.09      	|       0.89      	|         1.57         	|       0.48      	|
+|   GwcNet   	|       2.19      	|       0.97      	|         1.60         	|       0.48      	|
+|    Bi3D    	|       1.92      	|       1.16      	|         1.46         	|       0.54      	|
+|    **STTR**  	|       **1.26**    |       **0.45**   	|         **1.13**    	|       **0.42**   	|
+| **STTR-light**| 1.44<br>(+0.18) 	| 0.51<br>(+0.06) 	|    1.43<br>(+0.30)   	| 0.48<br>(+0.06) 	|
+
+|            	|    KITTI 2015   	|                	|  Middleburry-Q  	|                 	| Middleburry-H 	|      	| SCARED          	|                 	|
+|:----------:	|:---------------:	|:--------------:	|:---------------:	|:---------------:	|---------------	|------	|-----------------	|-----------------	|
+|            	|    **3px Error** 	|       **EPE**    	|    **3px Error**  |       **EPE**   |   **3px Error**	|  **EPE** 	|    **3px Error**    	|       **EPE**       	|
+|   PSMNet   	|      27.79      	|      6.56      	|      12.96      	|       3.05      	| 27.71         	| 8.65 	| 9.19            	| 1.56            	|
+|   GA-Net   	|      10.62      	|      1.67      	|       8.40      	|       1.79      	| 18.54         	| 5.77 	| 8.88            	| 1.50            	|
+|   GwcNet   	|      12.60      	|      2.21      	|       8.60      	|       1.89      	| 17.46         	| 5.93 	| 12.37           	| 1.89            	|
+|    Bi3D    	|       7.28      	|      1.68      	|      10.90      	|       2.40      	| OOM           	| OOM  	| 8.91            	| 1.52            	|
+|    **STTR**   |       **6.73**     	|      **1.50**      	|       6.19      	|       2.33      	| OOM           	| OOM  	| **8.00**            	| **1.47**            	|
+| **STTR-light** 	| 7.06<br>(+0.33) 	| 1.58<br>(+0.08 	| **5.90**<br>(-0.29) 	| **1.61**<br>(-0.72) 	| **9.38**          | **2.87** 	| 8.42<br>(+0.43) 	| 1.49<br>(+0.02) 	|
 
 Expected 3px error result of `kitti_finetuned_model.pth.tar` 
 
@@ -215,8 +233,6 @@ This project is under the Apache 2.0 license. Please see [LICENSE](LICENSE.txt) 
 ## Contributing
 We try out best to make our work easy to transfer. If you see any issues, feel free to fork the repo and start a pull request. 
 
-## Log
-- 2020.11.05: First code and arxiv release
 
 ## Acknowledgement
 Special thanks to authors of [SuperGlue](https://github.com/magicleap/SuperGluePretrainedNetwork), [PSMNet](https://github.com/JiaRenChang/PSMNet) and [DETR](https://github.com/facebookresearch/detr) for open-sourcing the code.
