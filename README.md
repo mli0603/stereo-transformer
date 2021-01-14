@@ -23,7 +23,7 @@ If you find our work relevant, please cite
 ```
 
 ## Update
-- 2021.01.13: :fire::fire::fire: STTR-light :fire::fire::fire: is released! Now the network is **~3x** faster and **~4x** more
+- 2021.01.13: :fire::fire::fire: STTR-light :fire::fire::fire: is released! Now the network is **~4x** faster and **~3x** more
   memory efficient with comparable performance as before. This also enables inference/training on higher resolution images. The benchmark result can be found in [Expected Result](https://github.com/mli0603/stereo-transformer#expected-result).
   Use branch `sttr-light` for the new model. 
 - 2020.11.05: First code and arxiv release
