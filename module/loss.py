@@ -192,6 +192,11 @@ class Criterion(nn.Module):
 
         self.aggregate_loss(loss)
 
+        if torch.isnan(loss['aggregated']):
+            torch.save('loss.dat', loss)
+            torch.save('inputs.dat', inputs)
+            torch.save('outputs.dat', outputs)
+
         # for benchmarking
         self.calc_px_error(outputs['disp_pred'], inputs.disp, loss, invalid_mask)
         self.compute_epe(outputs['disp_pred'], inputs.disp, loss, invalid_mask)
