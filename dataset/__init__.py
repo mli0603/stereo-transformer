@@ -7,7 +7,7 @@ import torch.utils.data as data
 from dataset.kitti import KITTI2015Dataset, KITTI2012Dataset, KITTIDataset
 from dataset.middlebury import Middlebury2014Dataset
 from dataset.scared import ScaredDataset
-from dataset.scene_flow import SceneFlowSamplePackDataset, SceneFlowFlyingThingsDataset
+from dataset.scene_flow import SceneFlowSamplePackDataset, SceneFlowFlyingThingsDataset, SceneFlowMonkaaDataset
 
 
 def build_data_loader(args):
@@ -26,6 +26,10 @@ def build_data_loader(args):
         dataset_train = SceneFlowFlyingThingsDataset(dataset_dir, 'train')
         dataset_validation = SceneFlowFlyingThingsDataset(dataset_dir, args.validation)
         dataset_test = SceneFlowFlyingThingsDataset(dataset_dir, 'test')
+    elif args.dataset == 'sceneflow_monkaa':
+        dataset_train = SceneFlowMonkaaDataset(dataset_dir, 'train')
+        dataset_validation = SceneFlowMonkaaDataset(dataset_dir, args.validation)
+        dataset_test = SceneFlowMonkaaDataset(dataset_dir, 'test')
     elif args.dataset == 'kitti2015':
         dataset_train = KITTI2015Dataset(dataset_dir, 'train')
         dataset_validation = KITTI2015Dataset(dataset_dir, args.validation)

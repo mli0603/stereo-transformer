@@ -138,7 +138,8 @@ class SceneFlowFlyingThingsDataset(data.Dataset):
         if self.split == "train":
             # horizontal flip
             result['left'], result['right'], result['occ_mask'], result['occ_mask_right'], disp, disp_right \
-                = horizontal_flip(result['left'], result['right'], occ_left, occ_right, disp_left, disp_right, self.split)
+                = horizontal_flip(result['left'], result['right'], occ_left, occ_right, disp_left, disp_right,
+                                  self.split)
             result['disp'] = np.nan_to_num(disp, nan=0.0)
             result['disp_right'] = np.nan_to_num(disp_right, nan=0.0)
 
@@ -149,6 +150,65 @@ class SceneFlowFlyingThingsDataset(data.Dataset):
             result['occ_mask_right'] = occ_right
             result['disp'] = disp_left
             result['disp_right'] = disp_right
+
+        result = augment(result, self.transformation)
+
+        return result
+
+
+class SceneFlowMonkaaDataset(data.Dataset):
+    def __init__(self, datadir, split='train'):
+        super(SceneFlowMonkaaDataset, self).__init__()
+
+        self.datadir = datadir
+        self.split = split
+        self._read_data()
+        self._augmentation()
+
+    def _read_data(self):
+        directory = os.path.join(self.datadir, 'frames_cleanpass')
+        sub_folders = [os.path.join(directory, subset) for subset in os.listdir(directory) if
+                       os.path.isdir(os.path.join(directory, subset))]
+
+        self.left_data = []
+        for sub_folder in sub_folders:
+            self.left_data += [os.path.join(sub_folder, 'left', img) for img in
+                               os.listdir(os.path.join(sub_folder, 'left'))]
+
+        self.left_data = natsorted(self.left_data)
+
+    def _split_data(self):
+        return
+
+    def _augmentation(self):
+        self.transformation = None
+
+    def __len__(self):
+        return len(self.left_data)
+
+    def __getitem__(self, idx):
+        result = {}
+
+        left_fname = self.left_data[idx]
+        result['left'] = np.array(Image.open(left_fname)).astype(np.uint8)[..., :3]
+
+        right_fname = left_fname.replace('left', 'right')
+        result['right'] = np.array(Image.open(right_fname)).astype(np.uint8)[..., :3]
+
+        disp_left_fname = left_fname.replace('frames_cleanpass', 'disparity').replace('.png', '.pfm')
+        disp_right_fname = right_fname.replace('frames_cleanpass', 'disparity').replace('.png', '.pfm')
+        disp_left, _ = readPFM(disp_left_fname)
+        disp_right, _ = readPFM(disp_right_fname)
+
+        occ_left_fname = left_fname.replace('frames_cleanpass', 'occlusion')
+        occ_right_fname = right_fname.replace('frames_cleanpass', 'occlusion')
+        occ_left = np.array(Image.open(occ_left_fname)).astype(np.bool)
+        occ_right = np.array(Image.open(occ_right_fname)).astype(np.bool)
+
+        result['occ_mask'] = occ_left
+        result['occ_mask_right'] = occ_right
+        result['disp'] = disp_left
+        result['disp_right'] = disp_right
 
         result = augment(result, self.transformation)
 
