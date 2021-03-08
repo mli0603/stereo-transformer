@@ -12,7 +12,7 @@ from utilities.misc import NestedTensor
 
 class PositionEncodingSine1DRelative(nn.Module):
     """
-    relative sine encoding 1D
+    relative sine encoding 1D, partially inspired by DETR (https://github.com/facebookresearch/detr)
     """
 
     def __init__(self, num_pos_feats=64, temperature=10000, normalize=False, scale=None):

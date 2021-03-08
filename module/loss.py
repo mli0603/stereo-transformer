@@ -74,11 +74,11 @@ class Criterion(nn.Module):
 
         # iou for occluded region
         inter_occ = torch.logical_and(pred_mask, occ_mask).sum()
-        union_occ = torch.logical_or(pred_mask, occ_mask).sum()
+        union_occ = torch.logical_or(torch.logical_and(pred_mask, ~invalid_mask), occ_mask).sum()
 
         # iou for non-occluded region
         inter_noc = torch.logical_and(~pred_mask, ~invalid_mask).sum()
-        union_noc = torch.logical_or(~pred_mask, ~invalid_mask).sum()
+        union_noc = torch.logical_or(torch.logical_and(~pred_mask, occ_mask), ~invalid_mask).sum()
 
         # aggregate
         loss_dict['iou'] = (inter_occ + inter_noc).float() / (union_occ + union_noc)

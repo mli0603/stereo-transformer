@@ -14,7 +14,8 @@ from utilities.misc import NestedTensor
 
 class SppBackbone(nn.Module):
     """
-    Contracting path of feature descriptor using Spatial Pyramid Pooling
+    Contracting path of feature descriptor using Spatial Pyramid Pooling,
+    SPP followed by PSMNet (https://github.com/JiaRenChang/PSMNet)
     """
 
     def __init__(self):
