@@ -144,6 +144,7 @@ class RegressionHead(nn.Module):
         """
         Sinkhorn Normalization in Log-space as matrix scaling problem.
         Regularization strength is set to 1 to avoid manual checking for numerical issues
+        Adapted from SuperGlue (https://github.com/magicleap/SuperGluePretrainedNetwork)
 
         :param attn: input attention weight, [N,H,W+1,W+1]
         :param log_mu: marginal distribution of left image, [N,H,W+1]
@@ -163,6 +164,7 @@ class RegressionHead(nn.Module):
     def _optimal_transport(self, attn: Tensor, iters: int):
         """
         Perform Differentiable Optimal Transport in Log-space for stability
+        Adapted from SuperGlue (https://github.com/magicleap/SuperGluePretrainedNetwork)
 
         :param attn: raw attention weight, [N,H,W,W]
         :param iters: number of iterations to run sinkhorn
