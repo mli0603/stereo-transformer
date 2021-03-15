@@ -194,6 +194,9 @@ class Criterion(nn.Module):
         else:
             invalid_mask = torch.logical_or(inputs.disp <= 0.0, inputs.disp >= self.validation_max_disp)
 
+        if torch.all(invalid_mask):
+            return None
+
         loss['rr'] = self.compute_rr_loss(outputs, inputs, invalid_mask)
         loss['l1_raw'] = self.compute_l1_loss(outputs['disp_pred_low_res'], inputs, invalid_mask, fullres=False)
         loss['l1'] = self.compute_l1_loss(outputs['disp_pred'], inputs, invalid_mask)

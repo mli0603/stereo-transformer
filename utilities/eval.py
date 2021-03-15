@@ -29,9 +29,14 @@ def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, data_loader: It
         output_file = {'left': [], 'right': [], 'disp': [], 'disp_pred': [], 'occ_mask': [], 'occ_pred': []}
 
     tbar = tqdm(data_loader)
+    valid_samples = len(tbar)
     for idx, data in enumerate(tbar):
         # forward pass
         outputs, losses, sampled_disp = forward_pass(model, data, device, criterion, eval_stats, idx, logger)
+
+        if losses is None:
+            valid_samples -= 1
+            continue
 
         # clear cache
         torch.cuda.empty_cache()
@@ -54,8 +59,8 @@ def evaluate(model: torch.nn.Module, criterion: torch.nn.Module, data_loader: It
         save_and_clear(output_idx, output_file)
 
     # compute avg
-    eval_stats['epe'] = eval_stats['epe'] / len(tbar)
-    eval_stats['iou'] = eval_stats['iou'] / len(tbar)
+    eval_stats['epe'] = eval_stats['epe'] / valid_samples
+    eval_stats['iou'] = eval_stats['iou'] / valid_samples
     eval_stats['px_error_rate'] = eval_stats['error_px'] / eval_stats['total_px']
 
     # write to tensorboard
