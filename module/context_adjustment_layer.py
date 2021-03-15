@@ -9,7 +9,7 @@ from torch.nn.utils import weight_norm
 
 class ContextAdjustmentLayer(nn.Module):
     """
-    Adjust the disp and occ based on image context
+    Adjust the disp and occ based on image context, design loosely follows https://github.com/JiahuiYu/wdsr_ntire2018
     """
 
     def __init__(self, num_blocks=8, feature_dim=16, expansion=3):
