@@ -40,6 +40,9 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
     # compute loss
     losses = criterion(inputs, outputs)
 
+    if losses is None:
+        return outputs, losses, disp
+
     # get the loss
     stats['rr'] += losses['rr'].item()
     stats['l1_raw'] += losses['l1_raw'].item()

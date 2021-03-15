@@ -31,6 +31,9 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
         # forward pass
         _, losses, sampled_disp = forward_pass(model, data, device, criterion, train_stats)
 
+        if losses is None:
+            continue
+
         # terminate training if exploded
         if not math.isfinite(losses['aggregated'].item()):
             print("Loss is {}, stopping training".format(losses['aggregated'].item()))
