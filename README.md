@@ -16,16 +16,15 @@ If you find our work relevant, please cite
 ```
 @article{li2020revisiting,
   title={Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers},
-  author={Li, Zhaoshuo and Liu, Xingtong and Creighton, Francis X and Taylor, Russell H and Unberath, Mathias},
+  author={Li, Zhaoshuo and Liu, Xingtong and Drenkow, Nathan and Ding, Andy and Creighton, Francis X and Taylor, Russell H and Unberath, Mathias},
   journal={arXiv preprint arXiv:2011.02910},
   year={2020}
 }
 ```
 
 ## Update
-- 2021.01.13: :fire::fire::fire: STTR-light :fire::fire::fire: is released! Now the network is **~4x** faster and **~3x** more
-  memory efficient with comparable performance as before. This also enables inference/training on higher resolution images. The benchmark result can be found in [Expected Result](https://github.com/mli0603/stereo-transformer#expected-result).
-  Use branch `sttr-light` for the new model. 
+- 2021.03.29: Added code/instruction to obtain training data from Scene Flow. 
+- 2021.01.13: STTR-light is released. Use branch `sttr-light` for the new model. 
 - 2020.11.05: First code and arxiv release
 
 ## Table of Content
@@ -54,7 +53,7 @@ STereo TRansformer (STTR) revisits stereo depth estimation from a sequence-to-se
 - Explicit occlusion handling.
 - Imposing uniqueness constraint.
  
-STTR performs comparably well against prior work with refinement in [Scene Flow](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html) and [KITTI 2015](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo). STTR is also able to generalize to [KITTI 2015](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo), [Middlebury 2014](https://vision.middlebury.edu/stereo/data/scenes2014/) and [SCARED](https://endovissub2019-scared.grand-challenge.org/) when trained only on synthetic data.  
+STTR performs comparably well against prior work with refinement in [Scene Flow](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html) and [KITTI 2015](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo). STTR is also able to generalize to [MPI Sintel](http://sintel.is.tue.mpg.de/stereo), [KITTI 2015](http://www.cvlibs.net/datasets/kitti/eval_scene_flow.php?benchmark=stereo), [Middlebury 2014](https://vision.middlebury.edu/stereo/data/scenes2014/) and [SCARED](https://endovissub2019-scared.grand-challenge.org/) when trained only on synthetic data.  
 
 #### Working Theory
 ##### Attention
@@ -72,6 +71,12 @@ We find that only image-image based attention is not enough. Therefore, we opt i
 Feature Descriptor
 ![Feature Descriptor](media/feat_map.gif)
 
+
+##### Implicit Learnt Feature Classification
+We observe that the feature extractor before Transformer actually learns without any explicit supervision to classify pixels into two clusters - textured and textureless. We hypothesize that this implicit learnt classification helps STTR to generalize.
+
+Implicit Learnt Classification
+![Implicit Learnt Classification](media/embedding.gif)
 
 ## Dependencies
 We recommend the following steps to set up your environment
@@ -91,15 +96,16 @@ We recommend the following steps to set up your environment
     - You can **remove** apex dependency if 
         - you have more powerful GPUs, or
         - you don't need to run the training script.
-    - Note: We tried to use the native mixed precision training from official Pytorch implementation. However, it looks like it currently does *not* support *gradient checkpointing*. We will post update if this is resolved.
+    - Note: If you train without apex, you may run into training error in [Issue #](). This is because augmentation may produce a disparity map that has no valid pixels at all and loss will be `inf`. I implemented an easy fix in [branch bug-attention-no-query](https://github.com/mli0603/stereo-transformer/tree/bug-attention-no-query). But I haven't had time to merge the fix yet. Will come soon.
+    - Note: We tried to use the native mixed precision training from official Pytorch implementation. However, it currently does *not* support *gradient checkpointing* for **LayerNorm**. We will post update if this is resolved.
 ## Pre-trained Models
 You can download the pretrained model from the following links:
 
 |               Models               |  Link    | 
-|:--------------------------         |:---------|
-| sceneflow_pretrained_model.pth.tar |  [Download link](https://drive.google.com/file/d/1R0YUpFzDRTKvjRfngF8SPj2JR2M1mMTF/view?usp=sharing)    |
-| kitti_finetuned_model.pth.tar      |  [Download link](https://drive.google.com/file/d/1UUESCCnOsb7TqzwYMkVV3d23k8shxNcE/view?usp=sharing)    |
-| :fire:sttr_light_sceneflow_pretrained_model.pth.tar:fire:      |  [Download link](https://drive.google.com/file/d/1MW5g1LQ1RaYbqeDS2AlHPZ96wAmkFG_O/view?usp=sharing)    |
+|:--------------------------         |:---------:|
+| **STTR** (Scene Flow pretrained)       |  [Download link](https://drive.google.com/file/d/1R0YUpFzDRTKvjRfngF8SPj2JR2M1mMTF/view?usp=sharing)    |
+| **STTR** (KITTI finetuned)             |  [Download link](https://drive.google.com/file/d/1UUESCCnOsb7TqzwYMkVV3d23k8shxNcE/view?usp=sharing)    |
+| **STTR-light** (Scene Flow pretrained) |  [Download link](https://drive.google.com/file/d/1MW5g1LQ1RaYbqeDS2AlHPZ96wAmkFG_O/view?usp=sharing)    |
 
 ## Folder Structure
 #### Code Structure
@@ -115,6 +121,33 @@ Please see [sample_data](sample_data) folder for details. We keep the original d
 
 - Note: We only provide one sample of each dataset to run the code. We do not own any copyright or credits of the data.
 
+Scene Flow 
+```
+SCENE_FLOW
+    |_ RGB_finalpass
+        |_ TRAIN
+            |_ A
+                |_0000
+    |_ disparity
+        |_ TRAIN
+            |_ A
+                |_0000
+    |_ occlusion
+        |_ TRAIN
+            |_ left
+```
+
+MPI Sintel
+```
+MPI_Sintel
+    |_ training
+        |_ disparities
+        |_ final_left 
+        |_ final_right 
+        |_ occlusions (occlusions of left border of objects)
+        |_ outofframe (occlusion of left border of images)
+```
+
 KITTI 2015
 ```
 KITTI_2015
@@ -122,7 +155,6 @@ KITTI_2015
         |_ disp_occ_0 (disparity including occluded region)
         |_ image_2 (left image)
         |_ image_3 (right image)
-    |_ testing
 ```
 
 MIDDLEBURY_2014
@@ -141,11 +173,11 @@ MIDDLEBURY_2014
 SCARED
 ```
 SCARED
-    |_ train
-        |_ disparity (disparity including occluded region)
-        |_ left (left image)
-        |_ occlusion (left occlusion)
-        |_ right (right image)
+    |_ training
+        |_ disp_left
+        |_ img_left 
+        |_ img_right
+        |_ occ_left 
 ```
 
 ## Usage
@@ -182,50 +214,52 @@ The result of STTR may vary by a small fraction depending on the trial, but it s
  
 Expected result of STTR (`sceneflow_pretrained_model.pth.tar`) and STTR-light (`sttr_light_pretrained_model.pth.tar`).
 
-|            	|    Sceneflow    	|                 	| Sceneflow (disp<192) 	|                 	|
-|:----------:	|:---------------:	|:---------------:	|:--------------------:	|:---------------:	|
-|            	|    **3px Error** 	|       **EPE**    	|       **3px Error**   |       **EPE**    	|
-|   PSMNet   	|       3.31      	|       1.25      	|         2.87         	|       0.95      	|
-|   GA-Net   	|       2.09      	|       0.89      	|         1.57         	|       0.48      	|
-|   GwcNet   	|       2.19      	|       0.97      	|         1.60         	|       0.48      	|
-|    Bi3D    	|       1.92      	|       1.16      	|         1.46         	|       0.54      	|
-|    **STTR**  	|       **1.26**    |       **0.45**   	|         **1.13**    	|       **0.42**   	|
-| **STTR-light**| 1.44<br>(+0.18) 	| 0.51<br>(+0.06) 	|    1.43<br>(+0.30)   	| 0.48<br>(+0.06) 	|
+Sceneflow
 
-|            	|    KITTI 2015   	|                	|  Middleburry-Q  	|                 	| Middleburry-H 	|      	| SCARED          	|                 	|
-|:----------:	|:---------------:	|:--------------:	|:---------------:	|:---------------:	|---------------	|------	|-----------------	|-----------------	|
-|            	|    **3px Error** 	|       **EPE**    	|    **3px Error**  |       **EPE**   |   **3px Error**	|  **EPE** 	|    **3px Error**    	|       **EPE**       	|
-|   PSMNet   	|      27.79      	|      6.56      	|      12.96      	|       3.05      	| 27.71         	| 8.65 	| 9.19            	| 1.56            	|
-|   GA-Net   	|      10.62      	|      1.67      	|       8.40      	|       1.79      	| 18.54         	| 5.77 	| 8.88            	| 1.50            	|
-|   GwcNet   	|      12.60      	|      2.21      	|       8.60      	|       1.89      	| 17.46         	| 5.93 	| 12.37           	| 1.89            	|
-|    Bi3D    	|       7.28      	|      1.68      	|      10.90      	|       2.40      	| OOM           	| OOM  	| 8.91            	| 1.52            	|
-|    **STTR**   |       **6.73**     	|      **1.50**      	|       6.19      	|       2.33      	| OOM           	| OOM  	| **8.00**            	| **1.47**            	|
-| **STTR-light** 	| 7.06<br>(+0.33) 	| 1.58<br>(+0.08 	| **5.90**<br>(-0.29) 	| **1.61**<br>(-0.72) 	| **9.38**          | **2.87** 	| 8.42<br>(+0.43) 	| 1.49<br>(+0.02) 	|
+|            	|    **3px Error** 	|       **EPE**     | **Occ IOU**     |
+|:----------:	|:---------------:	|:---------------:  |:---------------:|
+|**STTR** |       **1.26**    |       **0.45**   	|        0.92     |
+|**STTR-light** |       1.54    	|       0.50     	|     **0.97**    |
+
+Generalization without fine-tuning.
+
+|               | MPI Sintel | | |    KITTI 2015   	|                	| |  Middleburry-Q  	| |                 	| SCARED    |      	|                 	|
+|:----------:   |:---------------: |:---------------: |:---------------:|:---------------:|:---------------:|:---------------:|:---------------:	|:--------------: |:---------------:	|:------:	|:-----------------:	|:-----------------:	|
+|            	|  **3px Error** |       **EPE** | **Occ IOU** |    **3px Error** 	|       **EPE** |**Occ IOU** |    **3px Error** 	|       **EPE**    	| **Occ IOU**|    **3px Error**  |       **EPE** |**Occ IOU**   |   **3px Error**	|  **EPE** 	|    **Occ IOU** |
+|**STTR**       | **5.75** | 3.01    | **0.86** |    **6.74**     	|      **1.50**      	|  **0.98**  |   6.19      	|       2.33      	| **0.95** | 3.69 | 1.57  	| **0.96**
+|**STTR-light** | 5.82     | **2.95**| 0.69 | 7.20 	| 1.56 	| 0.95 | **5.36**	| **2.05** | 0.76 | **3.30**  | **1.19** 	| 0.89 
 
 Expected 3px error result of `kitti_finetuned_model.pth.tar` 
 
 Dataset | 3px Error | EPE
 :--- | :---: | :---: 
 KITTI 2015 training | 0.79 | 0.41
-KITTI 2015 testing | 2.07 | N/A
+KITTI 2015 testing | 2.01 | N/A
 
 ## Common Q&A
-1. What are occluded regions?\
+1. I don't see occlusion from Scene Flow dataset. What should I do?\
+   Scene Flow dataset can be downloaded at [https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html). However, you may notice that the **Full datasets** has disparity and images, but not occlusion. What you need to do is to download the occlusion from the **DispNet/FlowNet2.0 dataset subsets** and use the provided training list on the right named **train** to only use the subset of **Full datasets** with the occlusion data. Please see `utilities/subsample_sceneflow.py` for more details of subsampling the Full datasets.
+
+2. How much memory does it require to train/inference?\
+    We provide a flexible design to accommodate different hardware settings. 
+    - For both training and inference, you change the `downsample` parameter to reduce memory consumption at the cost of potential performance degradation.  
+    - For training, you can always change the crop size in `dataset/scene_flow.py`.
+    - For both training and inference, you can use the light-weight model [STTR-light](https://github.com/mli0603/stereo-transformer/tree/sttr-light).
+    
+3. What are occluded regions?\
     "Occlusion" means pixels in the left image do not have a corresponding match in right images. Because objects in *right image* are shifted to the *left* a little bit compared to the *right image*, thus pixels in the following two regions generally do not have a match:
      - At the *left border of the left image* 
      - At the *left border of foreground objects* 
 
-2. Why there are black patches in predicted disparity with values 0?\
+4. Why there are black patches in predicted disparity with values 0?\
     The disparities of occluded region are set to 0. 
 
-3. Why do you read disparity map including occluded area for KITTI during training?\
+5. Why do you read disparity map including occluded area for KITTI during training?\
     We use random crop as a form of augmentation, thus we need to recompute occluded regions again. The code for computing occluded area can be found in [dataset/preprocess.py](dataset/preprocess.py).
 
-4. How to reproduce feature map visualization in Figure 4 of the paper?\
+6. How to reproduce feature map visualization in Figure 4 of the paper?\
     The feature map is taken after the first LayerNorm in Transformer. We use PCA trained on the first and third layer to reduce the dimensionality to 3.
-
-5. How to reproduce feature distribution visualization in Figure 6 of the paper?\
-    The feature distribution visualization is done via UMAP, which is trained on Scene Flow feature map only. The feature map is again taken after the first LayerNorm in Transformer.
+   
     
 ## License
 This project is under the Apache 2.0 license. Please see [LICENSE](LICENSE.txt) for more information.
@@ -236,3 +270,4 @@ We try out best to make our work easy to transfer. If you see any issues, feel f
 
 ## Acknowledgement
 Special thanks to authors of [SuperGlue](https://github.com/magicleap/SuperGluePretrainedNetwork), [PSMNet](https://github.com/JiaRenChang/PSMNet) and [DETR](https://github.com/facebookresearch/detr) for open-sourcing the code.
+We also thank GwcNet, GANet, Bi3D, AANet for open-sourcing the code. We thank Xiran for MICCAI pre-processing.
