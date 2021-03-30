@@ -16,16 +16,15 @@ If you find our work relevant, please cite
 ```
 @article{li2020revisiting,
   title={Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers},
-  author={Li, Zhaoshuo and Liu, Xingtong and Creighton, Francis X and Taylor, Russell H and Unberath, Mathias},
+  author={Li, Zhaoshuo and Liu, Xingtong and Drenkow, Nathan and Ding, Andy and Creighton, Francis X and Taylor, Russell H and Unberath, Mathias},
   journal={arXiv preprint arXiv:2011.02910},
   year={2020}
 }
 ```
 
 ## Update
-- 2021.01.13: :fire::fire::fire: STTR-light :fire::fire::fire: is released! Now the network is **~4x** faster and **~3x** more
-  memory efficient with comparable performance as before. This also enables inference/training on higher resolution images. The benchmark result can be found in [Expected Result](https://github.com/mli0603/stereo-transformer#expected-result).
-  Use branch `sttr-light` for the new model. 
+- 2021.03.29: Added code/instruction to obtain training data from Scene Flow. 
+- 2021.01.13: STTR-light is released. Use branch `sttr-light` for the new model. 
 - 2020.11.05: First code and arxiv release
 
 ## Table of Content
@@ -107,9 +106,6 @@ You can download the pretrained model from the following links:
 | **STTR** (Scene Flow pretrained)       |  [Download link](https://drive.google.com/file/d/1R0YUpFzDRTKvjRfngF8SPj2JR2M1mMTF/view?usp=sharing)    |
 | **STTR** (KITTI finetuned)             |  [Download link](https://drive.google.com/file/d/1UUESCCnOsb7TqzwYMkVV3d23k8shxNcE/view?usp=sharing)    |
 | **STTR-light** (Scene Flow pretrained) |  [Download link](https://drive.google.com/file/d/1MW5g1LQ1RaYbqeDS2AlHPZ96wAmkFG_O/view?usp=sharing)    |
-| **PSMNet** (Scene Flow pretrained + asym aug)|  [Download link](https://drive.google.com/file/d/1rwpvGDqtz8WkI3woQQy7QkGWquI3pnff/view?usp=sharing)    |
-| **GwcNet** (Scene Flow pretrained + asym aug)|  [Download link](https://drive.google.com/file/d/1tY8wbQ4MgtuQ0fdv3YVDe1F-xeGBK9_0/view?usp=sharing)    |
-| **AANet** (Scene Flow pretrained + asym aug)|  [Download link](https://drive.google.com/file/d/14MJ_Q8veGyJ9RLLrF-t3RDbE1VIErEcz/view?usp=sharing)    |
 
 ## Folder Structure
 #### Code Structure
@@ -218,21 +214,20 @@ The result of STTR may vary by a small fraction depending on the trial, but it s
  
 Expected result of STTR (`sceneflow_pretrained_model.pth.tar`) and STTR-light (`sttr_light_pretrained_model.pth.tar`).
 
-|            	|    Sceneflow    	|                 	|                 	| Sceneflow (disp<192) 	|                 	||                 	
-|:----------:	|:---------------:	|:---------------:  |:---------------: |:---------------:	|:--------------------:	|:---------------:	|
-|            	|    **3px Error** 	|       **EPE**     | **Occ IOU**     |       **3px Error**   |       **EPE**    	| **Occ IOU**|
-|    **STTR (s=3)**  	|       **1.26**    |       **0.45**   	|                 |      **1.13**    	  |       **0.42**   	|
-|    **STTR (s=4)**  	|           |          	|                 |          	  |          	|
-| **STTR-light**| 1.54 	| 0.51 	|                 |1.43<br>(+0.30)   	  | 0.48<br>(+0.06) 	|
+Sceneflow
+
+|            	|    **3px Error** 	|       **EPE**     | **Occ IOU**     |
+|:----------:	|:---------------:	|:---------------:  |:---------------:|
+|**STTR** |       **1.26**    |       **0.45**   	|        0.92     |
+|**STTR-light** |       1.54    	|       0.50     	|     **0.97**    |
 
 Generalization without fine-tuning.
 
-|               | MPI Sintel | | |    KITTI 2015   	|                	| |  Middleburry-Q  	| |                 	| Middleburry-H 	|    |  	| SCARED    |      	|                 	|
-|:----------:   |:---------------: |:---------------: |:---------------:|:---------------:|:---------------:|:---------------:|:---------------:	|:--------------: |:--------------:	|:---------------:	|:---------------:	|:---------------:	|:------:	|:-----------------:	|:-----------------:	|
-|            	|  **3px Error** 	|       **EPE** | **Occ IOU** |    **3px Error** 	|       **EPE** |**Occ IOU** |    **3px Error** 	|       **EPE**    	| **Occ IOU**|    **3px Error**  |       **EPE** |**Occ IOU**   |   **3px Error**	|  **EPE** 	|    **Occ IOU** |
-|    **STTR (s=3)**   | | | |    **6.73**     	|      **1.50**      	|    |   6.19      	|       2.33      	| |            	|   	|  |**1.35**            	| **0.70**            	|
-|    **STTR (s=4)**   | | | |         	|            	|    |         	|             	| |            	|   	|  |            	|             	|
-| **STTR-light**| | | | 7.06<br>(+0.33) 	| 1.58<br>(+0.08 	|  |**5.90**<br>(-0.29) 	| **1.61**<br>(-0.72) |	| **9.38**          | **2.87** 	| |  	|  	|
+|               | MPI Sintel | | |    KITTI 2015   	|                	| |  Middleburry-Q  	| |                 	| SCARED    |      	|                 	|
+|:----------:   |:---------------: |:---------------: |:---------------:|:---------------:|:---------------:|:---------------:|:---------------:	|:--------------: |:---------------:	|:------:	|:-----------------:	|:-----------------:	|
+|            	|  **3px Error** |       **EPE** | **Occ IOU** |    **3px Error** 	|       **EPE** |**Occ IOU** |    **3px Error** 	|       **EPE**    	| **Occ IOU**|    **3px Error**  |       **EPE** |**Occ IOU**   |   **3px Error**	|  **EPE** 	|    **Occ IOU** |
+|**STTR**       | **5.75** | 3.01    | **0.86** |    **6.74**     	|      **1.50**      	|  **0.98**  |   6.19      	|       2.33      	| **0.95** | 3.69 | 1.57  	| **0.96**
+|**STTR-light** | 5.82     | **2.95**| 0.69 | 7.20 	| 1.56 	| 0.95 | **5.36**	| **2.05** | 0.76 | **3.30**  | **1.19** 	| 0.89 
 
 Expected 3px error result of `kitti_finetuned_model.pth.tar` 
 
@@ -243,7 +238,7 @@ KITTI 2015 testing | 2.01 | N/A
 
 ## Common Q&A
 1. I don't see occlusion from Scene Flow dataset. What should I do?\
-   Scene Flow dataset can be downloaded at [https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html). However, you may notice that the **Full datasets** has disparity and images, but not occlusion. What you need to do is to download the occlusion from the **DispNet/FlowNet2.0 dataset subsets** and use the provided training list on the right named **train** to only use the subset of **Full datasets** with the occlusion data.
+   Scene Flow dataset can be downloaded at [https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html](https://lmb.informatik.uni-freiburg.de/resources/datasets/SceneFlowDatasets.en.html). However, you may notice that the **Full datasets** has disparity and images, but not occlusion. What you need to do is to download the occlusion from the **DispNet/FlowNet2.0 dataset subsets** and use the provided training list on the right named **train** to only use the subset of **Full datasets** with the occlusion data. Please see `utilities/subsample_sceneflow.py` for more details of subsampling the Full datasets.
 
 2. How much memory does it require to train/inference?\
     We provide a flexible design to accommodate different hardware settings. 

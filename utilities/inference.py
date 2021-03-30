@@ -14,18 +14,7 @@ def forward_pass_without_loss(model, data, device, downsample):
     # read data
     left, right = data['left'].to(device), data['right'].to(device)
 
-    # we uniformly sample for training
-    bs, _, h, w = left.size()
-    if downsample <= 0:
-        sampled_cols = None
-        sampled_rows = None
-    else:
-        col_offset = int(downsample / 2)
-        row_offset = int(downsample / 2)
-        sampled_cols = torch.arange(col_offset, w, downsample)[None,].expand(bs, -1).to(device)
-        sampled_rows = torch.arange(row_offset, h, downsample)[None,].expand(bs, -1).to(device)
-
-    inputs = NestedTensor(left, right, sampled_cols=sampled_cols, sampled_rows=sampled_rows)
+    inputs = NestedTensor(left, right)
 
     # forward pass
     start = time.time()
