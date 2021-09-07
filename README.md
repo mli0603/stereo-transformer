@@ -96,16 +96,22 @@ We recommend the following steps to set up your environment
     - You can **remove** apex dependency if 
         - you have more powerful GPUs, or
         - you don't need to run the training script.
-    - Note: If you train without apex, you may run into training error in [Issue #](). This is because augmentation may produce a disparity map that has no valid pixels at all and loss will be `inf`. I implemented an easy fix in [branch bug-attention-no-query](https://github.com/mli0603/stereo-transformer/tree/bug-attention-no-query). But I haven't had time to merge the fix yet. Will come soon.
+    - Note: If you train without apex, you may run into training error in [Issue #](). This is because augmentation may produce a disparity map that has no valid pixels at all and loss will be `inf`.
     - Note: We tried to use the native mixed precision training from official Pytorch implementation. However, it currently does *not* support *gradient checkpointing* for **LayerNorm**. We will post update if this is resolved.
 ## Pre-trained Models
-You can download the pretrained model from the following links:
+You can download the pretrained model from the following links.
+
+- Google Drive:
 
 |               Models               |  Link    | 
 |:--------------------------         |:---------:|
 | **STTR** (Scene Flow pretrained)       |  [Download link](https://drive.google.com/file/d/1R0YUpFzDRTKvjRfngF8SPj2JR2M1mMTF/view?usp=sharing)    |
 | **STTR** (KITTI finetuned)             |  [Download link](https://drive.google.com/file/d/1UUESCCnOsb7TqzwYMkVV3d23k8shxNcE/view?usp=sharing)    |
 | **STTR-light** (Scene Flow pretrained) |  [Download link](https://drive.google.com/file/d/1MW5g1LQ1RaYbqeDS2AlHPZ96wAmkFG_O/view?usp=sharing)    |
+
+- Baidu download link:
+  - Link: https://pan.baidu.com/s/1euozEOX3fVdYID3v5dHJ_w
+  - Password: `jvda`
 
 ## Folder Structure
 #### Code Structure
