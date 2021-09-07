@@ -96,7 +96,6 @@ We recommend the following steps to set up your environment
     - You can **remove** apex dependency if 
         - you have more powerful GPUs, or
         - you don't need to run the training script.
-    - Note: If you train without apex, you may run into training error in [Issue #](). This is because augmentation may produce a disparity map that has no valid pixels at all and loss will be `inf`.
     - Note: We tried to use the native mixed precision training from official Pytorch implementation. However, it currently does *not* support *gradient checkpointing* for **LayerNorm**. We will post update if this is resolved.
 ## Pre-trained Models
 You can download the pretrained model from the following links.
