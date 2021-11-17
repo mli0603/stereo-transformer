@@ -14,11 +14,13 @@ Generalization to medical domain when trained only on synthetic data:
 
 If you find our work relevant, please cite
 ```
-@article{li2020revisiting,
-  title={Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective with Transformers},
-  author={Li, Zhaoshuo and Liu, Xingtong and Drenkow, Nathan and Ding, Andy and Creighton, Francis X and Taylor, Russell H and Unberath, Mathias},
-  journal={arXiv preprint arXiv:2011.02910},
-  year={2020}
+@InProceedings{Li_2021_ICCV,
+    author    = {Li, Zhaoshuo and Liu, Xingtong and Drenkow, Nathan and Ding, Andy and Creighton, Francis X. and Taylor, Russell H. and Unberath, Mathias},
+    title     = {Revisiting Stereo Depth Estimation From a Sequence-to-Sequence Perspective With Transformers},
+    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+    month     = {October},
+    year      = {2021},
+    pages     = {6197-6206}
 }
 ```
 
