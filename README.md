@@ -25,6 +25,7 @@ If you find our work relevant, please cite
 ```
 
 ## Update
+- 2022.01.16: Resolved torch version compatibility issue in [Issue #8](https://github.com/mli0603/stereo-transformer/issues/8). A big thanks to @DeH40!
 - 2021.03.29: Added code/instruction to obtain training data from Scene Flow. 
 - 2021.01.13: STTR-light is released. Use branch `sttr-light` for the new model. 
 - 2020.11.05: First code and arxiv release
@@ -86,9 +87,10 @@ We recommend the following steps to set up your environment
     ``` sh
     conda create --name sttr python=3.6 # create a virtual environment called "sttr" with python version 3.6
     ```
-    (as long as it is Python 3, it can be anything >= 3.6)
-- **Install Pytorch 1.5.1**: Please follow link [here](https://pytorch.org/get-started/locally/).
-  - Other versions of Pytorch may have problem during evaluation, see [Issue #8](https://github.com/mli0603/stereo-transformer/issues/8) for more detail.
+    (Python version >= 3.6)
+- **Install Pytorch**: Please follow link [here](https://pytorch.org/get-started/locally/).
+
+     (PyTorch version >= 1.5.1)
   
 - **Other third-party packages**: You can use pip to install the dependencies by 
     ```sh
