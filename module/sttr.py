@@ -56,6 +56,9 @@ class STTR(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):
                 m.track_running_stats = False
+                # fix the bug mentioned in https://github.com/mli0603/stereo-transformer/issues/8
+                m.running_mean = None
+                m.running_var = None
 
     def _relu_inplace(self):
         """
