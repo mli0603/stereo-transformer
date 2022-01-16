@@ -172,7 +172,15 @@ def main(args):
         checkpoint = torch.load(args.resume)
 
         pretrained_dict = checkpoint['state_dict']
-        model.load_state_dict(pretrained_dict)
+        missing, unexpected = model.load_state_dict(pretrained_dict, strict=False)
+        # check missing and unexpected keys
+        if len(missing) > 0:
+            print("Missing keys: ", ','.join(missing))
+            raise Exception("Missing keys.")
+        unexpected = [k for k in unexpected if 'running_mean' not in k and 'running_var' not in k]  # skip bn params
+        if len(unexpected) > 0:
+            print("Unexpected keys: ", ','.join(unexpected))
+            raise Exception("Unexpected keys.")
         print("Pre-trained model successfully loaded.")
 
         # if not ft/inference/eval, load states for optimizer, lr_scheduler, amp and prev best
