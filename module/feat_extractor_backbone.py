@@ -81,7 +81,9 @@ class SppBackbone(nn.Module):
         src_stereo = torch.cat([x.left, x.right], dim=0)  # 2NxCxHxW
 
         # in conv
-        output = self.in_conv(src_stereo)  # 1/2
+        #output = self.in_conv(src_stereo)  # 1/2
+        """Adding half() for ICML""" 
+        output = self.in_conv(src_stereo.half())  # 1/2
 
         # res blocks
         output_1 = self.resblock_1(output)  # 1/4

@@ -15,7 +15,7 @@ from utilities.summary_logger import TensorboardSummary
 
 def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     criterion: torch.nn.Module, device: torch.device, epoch: int, summary: TensorboardSummary,
-                    max_norm: float = 0, amp: object = None):
+                    max_norm: float = 0, amp: object = None, args: object=None):
     """
     train model for 1 epoch
     """
@@ -29,14 +29,14 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
     tbar = tqdm(data_loader)
     for idx, data in enumerate(tbar):
         # forward pass
-        _, losses, sampled_disp, _, _ = forward_pass(model, data, device, criterion, train_stats)
+        _, losses, sampled_disp, _ = forward_pass(model, data, device, criterion, train_stats)
 
         if losses is None:
             continue
 
         # terminate training if exploded
         if not math.isfinite(losses['aggregated'].item()):
-            print("Loss is {}, stopping training".format(losses['aggregated'].item()))
+            args.logger2.info("Loss is {}, stopping training".format(losses['aggregated'].item()))
             sys.exit(1)
 
         # backprop
@@ -54,7 +54,7 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
         # step optimizer
         optimizer.step()
 
-        print('pixel_error', losses['error_px'] / losses['total_px'])
+        args.logger2.info('pixel_error: {}'.format(losses['error_px'] / losses['total_px']))
 
         # clear cache
         torch.cuda.empty_cache()
@@ -65,7 +65,8 @@ def train_one_epoch(model: torch.nn.Module, data_loader: Iterable, optimizer: to
     # log to tensorboard
     write_summary(train_stats, summary, epoch, 'train')
 
-    print('Training loss', train_stats['l1'], 'pixel error rate', train_stats['px_error_rate'])
-    print('RR loss', train_stats['rr'])
+    #args.logger2.info('Training loss ', train_stats['l1'], 'pixel error rate', train_stats['px_error_rate'])
+    args.logger2.info('Training loss: {}, pixel error rate: {}'.format(train_stats['l1'], train_stats['px_error_rate']))
+    args.logger2.info('RR loss: {}'.format(train_stats['rr']))
 
     return

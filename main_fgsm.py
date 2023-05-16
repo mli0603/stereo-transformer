@@ -11,12 +11,15 @@ import torch
 
 from dataset import build_data_loader
 from module.sttr import STTR
-from utilities.checkpoint_saver import Saver
-from utilities.eval import evaluate
-from utilities.inference import inference
-from utilities.summary_logger import TensorboardSummary
-from utilities.train import train_one_epoch
+from utilities_fgsm.checkpoint_saver import Saver
+from utilities_fgsm.eval import evaluate
+from utilities_fgsm.inference import inference
+from utilities_fgsm.summary_logger import TensorboardSummary
+from utilities_fgsm.train import train_one_epoch
 from module.loss import build_criterion
+
+os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
+
 
 
 def get_args_parser():
@@ -84,9 +87,22 @@ def get_args_parser():
                         help='Weight for losses')
     parser.add_argument('--validation_max_disp', type=int, default=-1)
 
+    parser.add_argument('-fg', '--fgsm', action="store_true",
+                        help='flag for testing against fgsm attack')
+    parser.add_argument('-pf', '--plot_freq', action="store_true",
+                        help='to get values for plot power vs frequency plots')
+    parser.add_argument('-ep', '--epsilon', type=float, default=2.0,
+                        help='to pass the epsilon value for FGSM attack')
+    parser.add_argument('-alp', '--alpha', type=float, default=0.15,
+                        help='step size for attack')
+
     # * Large transposed convolution kernels, plots and FGSM attack
     parser.add_argument('-ks', '--kernel_size', type=int, default=3,
                         help='size of the transposed convolution kernels')
+    parser.add_argument('-it', '--iterations', type=int, default=1,
+                        help='number of iterations for adversarial attack')
+    parser.add_argument('-at', '--attack', type=str, default='fgsm', choices={'fgsm', 'cospgd'},
+                        help='FGSM or CosPGD attack')
 
     return parser
 
@@ -223,7 +239,7 @@ def main(args):
     # eval
     if args.eval:
         print("Start evaluation")
-        evaluate(model, criterion, data_loader_val, device, 0, summary_writer, True)
+        evaluate(model, criterion, data_loader_val, device, 0, summary_writer, True, args=args, experiment_dir=checkpoint_saver.experiment_dir)
         return
 
     # train
@@ -261,4 +277,6 @@ def main(args):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser('STTR training and evaluation script', parents=[get_args_parser()])
     args_ = ap.parse_args()
+    if args_.iterations == 1:
+        args_.alpha = args_.epsilon
     main(args_)

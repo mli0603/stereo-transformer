@@ -12,3 +12,5 @@ tensorboard
 torchcontrib
 tifffile
 pygit2
+torch
+torchvision

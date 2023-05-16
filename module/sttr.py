@@ -94,4 +94,7 @@ class STTR(nn.Module):
         # regress disparity and occlusion
         output = self.regression_head(attn_weight, x)
 
-        return output
+        if self.training:
+            return output
+        else:
+            return output, feat_left, feat_right

@@ -42,13 +42,17 @@ class ContextAdjustmentLayer(nn.Module):
             disp_final: final disparity [N,1,H,W]
             occ_final: final occlusion [N,1,H,W] 
         """""
-        feat = self.in_conv(torch.cat([disp_raw, img], dim=1))
+        #feat = self.in_conv(torch.cat([disp_raw, img], dim=1))
+        """HALFING ADDED HERE FOR ICML"""
+        feat = self.in_conv(torch.cat([disp_raw, img], dim=1).half())
         for layer in self.layers:
             feat = layer(feat, disp_raw)
         disp_res = self.out_conv(feat)
         disp_final = disp_raw + disp_res
 
-        occ_final = self.occ_head(torch.cat([occ_raw, img], dim=1))
+        #occ_final = self.occ_head(torch.cat([occ_raw, img], dim=1))
+        """HALFING ADDED HERE FOR ICML"""
+        occ_final = self.occ_head(torch.cat([occ_raw, img], dim=1).half())
 
         return disp_final, occ_final
 
@@ -64,7 +68,9 @@ class ResBlock(nn.Module):
         )
 
     def forward(self, x: torch.Tensor, disp: torch.Tensor):
-        return x + self.module(torch.cat([disp, x], dim=1)) * self.res_scale
+        #return x + self.module(torch.cat([disp, x], dim=1)) * self.res_scale
+        """HALFING ADDED HERE FOR ICML"""
+        return x + self.module(torch.cat([disp, x], dim=1).half()) * self.res_scale
 
 
 def build_context_adjustment_layer(args):

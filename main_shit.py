@@ -18,6 +18,8 @@ from utilities.summary_logger import TensorboardSummary
 from utilities.train import train_one_epoch
 from module.loss import build_criterion
 
+import logging
+
 
 def get_args_parser():
     """
@@ -34,7 +36,9 @@ def get_args_parser():
     parser.add_argument('--epochs', default=300, type=int)
     parser.add_argument('--clip_max_norm', default=0.1, type=float,
                         help='gradient clipping max norm')
-    parser.add_argument('--device', default='cuda',
+    #parser.add_argument('--device', default='cuda',
+    #                    help='device to use for training / testing')
+    parser.add_argument('--device', default='cpu',
                         help='device to use for training / testing')
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--resume', default='', help='resume from checkpoint')
@@ -87,6 +91,14 @@ def get_args_parser():
     # * Large transposed convolution kernels, plots and FGSM attack
     parser.add_argument('-ks', '--kernel_size', type=int, default=3,
                         help='size of the transposed convolution kernels')
+    parser.add_argument('-pk', '--parallel_kernel', action="store_true",
+                        help='parallel kernel for large transposed convolution kernels')
+    parser.add_argument('-fg', '--fgsm', action="store_true",
+                        help='flag for testing against fgsm attack')
+    parser.add_argument('-pf', '--plot_freq', action="store_true",
+                        help='to get values for plot power vs frequency plots')
+    parser.add_argument('-ep', '--epsilon', type=float, default=2.0,
+                        help='to pass the epsilon value for FGSM attack')
 
     return parser
 
@@ -112,21 +124,24 @@ def save_checkpoint(epoch, model, optimizer, lr_scheduler, prev_best, checkpoint
         checkpoint_saver.save_checkpoint(checkpoint, 'epoch_' + str(epoch) + '_model.pth.tar', write_best=False)
 
 
-def print_param(model):
+def print_param(model, args):
     """
     print number of parameters in the model
     """
 
     n_parameters = sum(p.numel() for n, p in model.named_parameters() if 'backbone' in n and p.requires_grad)
-    print('number of params in backbone:', f'{n_parameters:,}')
+    #args.logger2.info('number of params in backbone:', f'{n_parameters:,}')
+    args.logger2.info('number of params in backbone: {}'.format(f'{n_parameters:,}'))
     n_parameters = sum(p.numel() for n, p in model.named_parameters() if
                        'transformer' in n and 'regression' not in n and p.requires_grad)
-    print('number of params in transformer:', f'{n_parameters:,}')
+    #args.logger2.info('number of params in transformer:', f'{n_parameters:,}')
+    args.logger2.info('number of params in transformer: {}'.format(f'{n_parameters:,}'))
     n_parameters = sum(p.numel() for n, p in model.named_parameters() if 'tokenizer' in n and p.requires_grad)
-
-    print('number of params in tokenizer:', f'{n_parameters:,}')
+    #args.logger2.info('number of params in tokenizer:', f'{n_parameters:,}')
+    args.logger2.info('number of params in tokenizer: {}'.format(f'{n_parameters:,}'))
     n_parameters = sum(p.numel() for n, p in model.named_parameters() if 'regression' in n and p.requires_grad)
-    print('number of params in regression:', f'{n_parameters:,}')
+    #args.logger2.info('number of params in regression:', f'{n_parameters:,}')
+    args.logger2.info('number of params in regression: {}'.format(f'{n_parameters:,}'))
 
 
 def main(args):
@@ -139,9 +154,26 @@ def main(args):
     np.random.seed(seed)
     random.seed(seed)
 
+    # initiate saver and logger
+    checkpoint_saver = Saver(args)
+    summary_writer = TensorboardSummary(checkpoint_saver.experiment_dir)
+    
+    os.makedirs(checkpoint_saver.experiment_dir, exist_ok=True)
+    log_file = os.path.join(checkpoint_saver.experiment_dir, 'log.log')
+    logging.basicConfig(filename=log_file, filemode='a')
+    args.logger2 = logging.getLogger("main-logger")
+    args.logger2.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    fmt = "[%(asctime)s %(levelname)s %(filename)s line %(lineno)d %(process)d] %(message)s"
+    handler.setFormatter(logging.Formatter(fmt))
+    args.logger2.addHandler(handler)
+
     # build model
     model = STTR(args).to(device)
-    print_param(model)
+    #import ipdb;ipdb.set_trace()
+    #model = STTR(args).cuda()
+    args.logger2.info(model)
+    print_param(model, args)
 
     # set learning rate
     param_dicts = [
@@ -173,20 +205,20 @@ def main(args):
     if args.resume != '':
         if not os.path.isfile(args.resume):
             raise RuntimeError(f"=> no checkpoint found at '{args.resume}'")
-        checkpoint = torch.load(args.resume)
+        checkpoint = torch.load(args.resume, map_location=torch.device('cpu'))
 
         pretrained_dict = checkpoint['state_dict']
         missing, unexpected = model.load_state_dict(pretrained_dict, strict=False)
         # check missing and unexpected keys
         if len(missing) > 0:
-            print("Missing keys: ", ','.join(missing))
+            args.logger2.info("Missing keys: ", ','.join(missing))
             raise Exception("Missing keys.")
         unexpected_filtered = [k for k in unexpected if
                                'running_mean' not in k and 'running_var' not in k]  # skip bn params
         if len(unexpected_filtered) > 0:
-            print("Unexpected keys: ", ','.join(unexpected_filtered))
+            args.logger2.info("Unexpected keys: ", ','.join(unexpected_filtered))
             raise Exception("Unexpected keys.")
-        print("Pre-trained model successfully loaded.")
+        args.logger2.info("Pre-trained model successfully loaded.")
 
         # if not ft/inference/eval, load states for optimizer, lr_scheduler, amp and prev best
         if not (args.ft or args.inference or args.eval):
@@ -200,19 +232,15 @@ def main(args):
                 prev_best = checkpoint['best_pred']
                 if args.apex:
                     amp.load_state_dict(checkpoint['amp'])
-                print("Pre-trained optimizer, lr scheduler and stats successfully loaded.")
+                args.logger2.info("Pre-trained optimizer, lr scheduler and stats successfully loaded.")
 
     # inference
     if args.inference:
-        print("Start inference")
+        args.logger2.info("Start inference")
         _, _, data_loader = build_data_loader(args)
         inference(model, data_loader, device, args.downsample)
 
-        return
-
-    # initiate saver and logger
-    checkpoint_saver = Saver(args)
-    summary_writer = TensorboardSummary(checkpoint_saver.experiment_dir)
+        return    
 
     # build dataloader
     data_loader_train, data_loader_val, _ = build_data_loader(args)
@@ -222,22 +250,23 @@ def main(args):
 
     # eval
     if args.eval:
-        print("Start evaluation")
-        evaluate(model, criterion, data_loader_val, device, 0, summary_writer, True)
+        args.logger2.info("Start evaluation")
+        evaluate(model, criterion, data_loader_val, device, 0, summary_writer, True, output_path=checkpoint_saver.experiment_dir, fgsm=args.fgsm, epsilon=args.epsilon, args=args)
         return
 
     # train
-    print("Start training")
+    args.logger2.info("Start training")
+    #import ipdb;ipdb.set_trace()
     for epoch in range(args.start_epoch, args.epochs):
         # train
-        print("Epoch: %d" % epoch)
+        args.logger2.info("Epoch: %d" % epoch)
         train_one_epoch(model, data_loader_train, optimizer, criterion, device, epoch, summary_writer,
-                        args.clip_max_norm, amp)
+                        args.clip_max_norm, amp, args)
 
         # step lr if not pretraining
         if not args.pre_train:
             lr_scheduler.step()
-            print("current learning rate", lr_scheduler.get_lr())
+            args.logger2.info("current learning rate: {}".format(lr_scheduler.get_lr()))
 
         # empty cache
         torch.cuda.empty_cache()
@@ -247,7 +276,7 @@ def main(args):
             save_checkpoint(epoch, model, optimizer, lr_scheduler, prev_best, checkpoint_saver, False, amp)
 
         # validate
-        eval_stats = evaluate(model, criterion, data_loader_val, device, epoch, summary_writer, False)
+        eval_stats = evaluate(model, criterion, data_loader_val, device, epoch, summary_writer, False, args=args)
         # save if best
         if prev_best > eval_stats['epe'] and 0.5 > eval_stats['px_error_rate']:
             save_checkpoint(epoch, model, optimizer, lr_scheduler, prev_best, checkpoint_saver, True, amp)

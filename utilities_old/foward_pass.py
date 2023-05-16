@@ -20,12 +20,11 @@ def write_summary(stats, summary, epoch, mode):
     summary.writer.add_scalar(mode + '/3px_error', stats['px_error_rate'], epoch)
 
 
-def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
+def forward_pass(model, data, device, criterion, stats, idx=0, logger=None, epsilon:float=0.0):
     """
     forward pass of the model given input
     """
     # read data
-    feat_left, feat_right = None, None
     left, right = data['left'].to(device), data['right'].to(device)
     disp, occ_mask, occ_mask_right = data['disp'].to(device), data['occ_mask'].to(device), \
                                      data['occ_mask_right'].to(device)
@@ -36,10 +35,7 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
     inputs = NestedTensor(left, right, disp=disp, occ_mask=occ_mask, occ_mask_right=occ_mask_right)
 
     # forward pass
-    if model.training:
-        outputs = model(inputs)
-    else:
-        outputs, feat_left, feat_right = model(inputs)
+    outputs, feat_left, feat_right = model(inputs)
 
     # compute loss
     losses = criterion(inputs, outputs)
@@ -64,4 +60,4 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
                     (idx, losses['l1_raw'].item(), losses['rr'].item(), losses['l1'].item(), losses['occ_be'].item(),
                      losses['epe'].item(), losses['iou'].item(), losses['error_px'] / losses['total_px']))
 
-    return outputs, losses, disp, feat_left, feat_right
+    return outputs, losses, disp, (feat_left, feat_right, left, right)

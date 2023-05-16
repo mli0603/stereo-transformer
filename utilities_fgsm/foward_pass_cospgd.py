@@ -19,13 +19,23 @@ def write_summary(stats, summary, epoch, mode):
     summary.writer.add_scalar(mode + '/iou', stats['iou'], epoch)
     summary.writer.add_scalar(mode + '/3px_error', stats['px_error_rate'], epoch)
 
+# FGSM attack code
+def fgsm_attack(image, epsilon, data_grad):
+    # Collect the element-wise sign of the data gradient
+    sign_data_grad = data_grad.sign()
+    # Create the perturbed image by adjusting each pixel of the input image
+    perturbed_image = image + epsilon*sign_data_grad
+    # Adding clipping to maintain [0,1] range
+    #perturbed_image = torch.clamp(perturbed_image, 0, 1)
+    # Return the perturbed image
+    return perturbed_image
 
-def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
+
+def forward_pass(model, data, device, criterion, stats, idx=0, logger=None, args=None):
     """
     forward pass of the model given input
     """
-    # read data
-    feat_left, feat_right = None, None
+    # read data    
     left, right = data['left'].to(device), data['right'].to(device)
     disp, occ_mask, occ_mask_right = data['disp'].to(device), data['occ_mask'].to(device), \
                                      data['occ_mask_right'].to(device)
@@ -35,15 +45,31 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
     # build the input
     inputs = NestedTensor(left, right, disp=disp, occ_mask=occ_mask, occ_mask_right=occ_mask_right)
 
+    inputs.left.requires_grad=True
+    inputs.right.requires_grad=True    
+    inputs.disp.requires_grad=True
+
     # forward pass
-    if model.training:
-        outputs = model(inputs)
-    else:
-        outputs, feat_left, feat_right = model(inputs)
+    with torch.enable_grad():
+        outputs, _,_ = model(inputs)
 
     # compute loss
-    losses = criterion(inputs, outputs)
+        losses = criterion(inputs, outputs)
 
+    if losses is None:
+        return outputs, losses, disp
+    losses['aggregated'].retain_grad()
+    losses['aggregated'].backward()
+
+    #logger.info("ATTACKING WITH FGSM")
+    inputs.left = fgsm_attack(inputs.left, args.epsilon, inputs.left.grad)
+    right.left = fgsm_attack(inputs.right, args.epsilon, inputs.right.grad)
+
+    with torch.no_grad():
+        outputs, left_feats, right_feats = model(inputs)
+    
+    # compute loss
+    losses = criterion(inputs, outputs)
     if losses is None:
         return outputs, losses, disp
 
@@ -64,4 +90,4 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None):
                     (idx, losses['l1_raw'].item(), losses['rr'].item(), losses['l1'].item(), losses['occ_be'].item(),
                      losses['epe'].item(), losses['iou'].item(), losses['error_px'] / losses['total_px']))
 
-    return outputs, losses, disp, feat_left, feat_right
+    return outputs, losses, disp, left_feats, right_feats
