@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:4
 #SBATCH --mem=230G
 #SBATCH --cpus-per-task=64
-#SBATCH --output=slurm/new_neurips/pgd_vanilla_%A.out
+#SBATCH --output=slurm/neurips/0pgd_vanilla_%A.out
 
 #reload
 #sttr
@@ -16,7 +16,7 @@
 CUDA_VISIBLE_DEVICES=0
 python main_fgsm.py  --epochs 15\
                 --batch_size 1\
-                --checkpoint icml_pgd\
+                --checkpoint correct_neurips_pgd\
                 --pre_train\
                 --num_workers 64\
                 --dataset sceneflow\
@@ -26,7 +26,7 @@ python main_fgsm.py  --epochs 15\
                 --eval\
                 --fgsm\
                 --epsilon $1\
-                -it $2\
+                -it $3\
                 -at fgsm\
-                --alpha $1
+                --alpha $2
 

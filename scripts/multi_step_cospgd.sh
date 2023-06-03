@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:4
 #SBATCH --mem=230G
 #SBATCH --cpus-per-task=64
-#SBATCH --output=slurm/neurips/again_new_multi_cospgd_%A.out
+#SBATCH --output=slurm/neurips/0again_new_multi_cospgd_%A.out
 
 #reload
 #sttr
@@ -16,7 +16,7 @@
 CUDA_VISIBLE_DEVICES=0
 python main_fgsm.py  --epochs 15\
                 --batch_size 1\
-                --checkpoint new_neurips_multi_step_cospgd\
+                --checkpoint correct_neurips_multi_step_cospgd\
                 --pre_train\
                 --num_workers 64\
                 --dataset sceneflow\

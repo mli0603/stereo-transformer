@@ -8,6 +8,8 @@ import random
 
 import numpy as np
 import torch
+import torch.nn as nn
+import torchvision
 
 from dataset import build_data_loader
 from module.sttr import STTR
@@ -17,6 +19,8 @@ from utilities_fgsm.inference import inference
 from utilities_fgsm.summary_logger import TensorboardSummary
 from utilities_fgsm.train import train_one_epoch
 from module.loss import build_criterion
+
+from utilities.misc import Shashank_Normalize
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:32"
 
@@ -101,7 +105,7 @@ def get_args_parser():
                         help='size of the transposed convolution kernels')
     parser.add_argument('-it', '--iterations', type=int, default=1,
                         help='number of iterations for adversarial attack')
-    parser.add_argument('-at', '--attack', type=str, default='fgsm', choices={'fgsm', 'cospgd'},
+    parser.add_argument('-at', '--attack', type=str, default='fgsm', choices={'fgsm', 'cospgd', 'pgd'},
                         help='FGSM or CosPGD attack')
 
     return parser
@@ -218,6 +222,11 @@ def main(args):
                     amp.load_state_dict(checkpoint['amp'])
                 print("Pre-trained optimizer, lr scheduler and stats successfully loaded.")
 
+    
+    #mean=[0.485, 0.456, 0.406]
+    #std=[0.229, 0.224, 0.225]
+    model = nn.Sequential(Shashank_Normalize(), model)
+
     # inference
     if args.inference:
         print("Start inference")
@@ -277,6 +286,8 @@ def main(args):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser('STTR training and evaluation script', parents=[get_args_parser()])
     args_ = ap.parse_args()
+    args_.alpha *= 255
+    args_.epsilon *=255
     if args_.iterations == 1:
         args_.alpha = args_.epsilon
     main(args_)

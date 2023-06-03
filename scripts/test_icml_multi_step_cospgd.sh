@@ -1,8 +1,8 @@
 #!/bin/bash
 
 epsilon="0.03"
-alpha="0.04"
-iterations="3 5 10 20 40 100"
+alpha="0.01"
+iterations="3 5 10 20 40"
 
 
 for it in $iterations

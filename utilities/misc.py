@@ -7,6 +7,7 @@ import copy
 import numpy as np
 import torch
 import torch.nn as nn
+import torchvision
 
 
 class NestedTensor(object):
@@ -16,6 +17,18 @@ class NestedTensor(object):
         self.disp = disp
         self.occ_mask = occ_mask
         self.occ_mask_right = occ_mask_right
+
+class Shashank_Normalize(object):
+    def __init__(self):        
+        super().__init__()
+        mean=[0.485, 0.456, 0.406]
+        std=[0.229, 0.224, 0.225]
+        self.normalize = torchvision.transforms.Normalize(mean, std, inplace=False)
+    def forward(self, inputs):
+        for key, values in zip(inputs.__dict__.keys(), inputs.__dict__.values()):
+            setattr(inputs, key, self.normalize(values))
+        return inputs
+        
 
 
 def center_crop(layer, max_height, max_width):

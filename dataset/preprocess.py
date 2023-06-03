@@ -15,8 +15,9 @@ IMG_EXTENSIONS = [
     '.png', '.PNG', '.ppm', '.PPM', '.bmp', '.BMP',
 ]
 
-normalization = Compose([Normalize(always_apply=True),
-                         ToTensor(always_apply=True)], p=1.0)
+#normalization = Compose([Normalize(always_apply=True),
+#                         ToTensor(always_apply=True)], p=1.0)
+normalization = Compose([ToTensor(always_apply=True)], p=1.0)
 
 
 def denormalize(img):

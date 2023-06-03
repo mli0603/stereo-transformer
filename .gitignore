@@ -4,6 +4,8 @@ module_old/
 old_output/
 outputs/
 run/
+old_run/
+old_slurm/
 
 # Compiled Object files
 *.slo

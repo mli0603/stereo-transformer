@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:4
 #SBATCH --mem=230G
 #SBATCH --cpus-per-task=64
-#SBATCH --output=slurm/new_neurips/again_new_one_cospgd_%A.out
+#SBATCH --output=slurm/neurips/again_new_one_cospgd_%A.out
 
 #reload
 #sttr

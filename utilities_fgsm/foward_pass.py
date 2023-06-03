@@ -21,14 +21,14 @@ def write_summary(stats, summary, epoch, mode):
     summary.writer.add_scalar(mode + '/3px_error', stats['px_error_rate'], epoch)
 
 # FGSM attack code
-def fgsm_attack(image, epsilon, alpha, data_grad, clip_min, clip_max):
+def fgsm_attack(perturbed_image, epsilon, data_grad, orig_image, alpha):
     # Collect the element-wise sign of the data gradient
     sign_data_grad = data_grad.sign()
     # Create the perturbed image by adjusting each pixel of the input image
-    perturbed_image = image + alpha*sign_data_grad
+    perturbed_image = perturbed_image.detach() + alpha*sign_data_grad
     # Adding clipping to maintain [0,1] range
-    perturbed_image = torch.clamp(perturbed_image, clip_min, clip_max)
-    # Return the perturbed image
+    delta = torch.clamp(perturbed_image - orig_image, min=-epsilon, max=epsilon)
+    perturbed_image = torch.clamp(orig_image + delta, 0, 255).detach()
     return perturbed_image
 
 
@@ -37,7 +37,8 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None, args
     forward pass of the model given input
     """    
 
-    # read data    
+    # read data  
+    #import ipdb;ipdb.set_trace()  
     left, right = data['left'].to(device), data['right'].to(device)
     disp, occ_mask, occ_mask_right = data['disp'].to(device), data['occ_mask'].to(device), \
                                      data['occ_mask_right'].to(device)
@@ -55,8 +56,11 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None, args
     inputs.right = inputs.right.half()
     inputs.disp = inputs.disp.half()
 
-    left_clip_min, left_clip_max = inputs.left.min()-args.epsilon, inputs.left.max()+args.epsilon
-    right_clip_min, right_clip_max = inputs.right.min()-args.epsilon, inputs.right.max()+args.epsilon
+    left_orig_image = inputs.left.clone()
+    right_orig_image = inputs.right.clone()
+
+    print(left_orig_image.min(), left_orig_image.max(), right_orig_image.min(), right_orig_image.max())
+    
 
     if args.attack == 'cospgd' or args.attack == 'pgd':
         inputs.left = inputs.left + torch.FloatTensor(inputs.left.shape).uniform_(-1*args.epsilon, args.epsilon).cuda()
@@ -72,8 +76,6 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None, args
 
     inputs.left.requires_grad=True
     inputs.right.requires_grad=True   
-   
-    
 
     # forward pass
     with torch.enable_grad():
@@ -89,51 +91,33 @@ def forward_pass(model, data, device, criterion, stats, idx=0, logger=None, args
     with torch.enable_grad():
         losses.requires_grad=True
         model.zero_grad()
-        #losses.retain_grad()
-        #for l in losses:
-        #    l.requires_grad=True
-        #losses['aggregated'].requires_grad=True
+
 
         for i in range(args.iterations):
-            #with torch.enable_grad():
-            #losses['aggregated'].retain_grad()
-        
-            #if args.attack == 'fgsm':
-            #    losses['aggregated'].backward()
-                #print(outputs['disp_pred'].shape)
+
             if args.attack == 'cospgd':
                 cossim= F.cosine_similarity(outputs['disp_pred'], inputs.disp)
-                #final_loss = torch.sum(cossim*losses['aggregated']) #/(outputs['disp_pred'].shape[-1]*outputs['disp_pred'].shape[-2])
                 final_loss = losses['aggregated']
                 with torch.no_grad():
-                    final_loss *= torch.sum(cossim)
-                #print(outputs['disp_pred'].shape)
+                    final_loss *= torch.sum(cossim)/(outputs['disp_pred'].shape[-1]*outputs['disp_pred'].shape[-2])
                 final_loss.backward(retain_graph=True)
             else:
                 losses['aggregated'].backward(retain_graph=True)
 
-            #print("iterations: {} \t losses: {}".format(i, losses['aggregated']))
-            #logger.info("ATTACKING WITH FGSM")
-            #print("before")
-            #print(inputs.left.requires_grad)
-            #print(inputs.left.grad.mean())
-            inputs.left = fgsm_attack(inputs.left, args.epsilon, alpha, inputs.left.grad, left_clip_min, left_clip_max)
-            right.left = fgsm_attack(inputs.right, args.epsilon, alpha, inputs.right.grad, right_clip_min, right_clip_max)
-            #print("\nafter")
-            #print(inputs.left.requires_grad)
-            inputs.left.retain_grad() 
-            inputs.right.retain_grad()
+
+            inputs.left = fgsm_attack(inputs.left, args.epsilon, alpha, inputs.left.grad, left_orig_image)
+            right.left = fgsm_attack(inputs.right, args.epsilon, alpha, inputs.right.grad, right_orig_image)
+
+            inputs.left.requires_grad=True
+            inputs.right.requires_grad=True
             if args.attack == 'cospgd':
                 inputs.disp.retain_grad()
-
-            #print(inputs.left.grad.mean())
-
         
             outputs, left_feats, right_feats = model(inputs)
     
             # compute loss
             losses = criterion(inputs, outputs)
-            #print("1")
+
     
     
     if losses is None:
