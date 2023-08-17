@@ -65,7 +65,7 @@ class STTR(nn.Module):
         make all ReLU inplace
         """
         for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
+            if isinstance(m, nn.ReLU):
                 m.inplace = True
 
     def forward(self, x: NestedTensor):
